@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="zh-CN">
 
 <head>
 
@@ -13,20 +13,21 @@
 </head>
 
 
-
 <body>
 
 
 <div class="card">
 
 
-
 <img id="avatar"
-class="avatar">
+class="avatar"
+src="images/avatar.jpg">
 
 
 
-<h1 id="name"></h1>
+<h1 id="name">
+加载中...
+</h1>
 
 
 <h3 id="job"></h3>
@@ -80,18 +81,86 @@ class="avatar">
 
 
 
-<script>
+
+<script type="module">
 
 
-let data=
-JSON.parse(
-localStorage.getItem("card")
-);
+import { supabase }
+from "./supabase.js";
 
 
+
+
+// 获取登录用户
+
+const {
+
+data:userData
+
+}=
+
+await supabase.auth.getUser();
+
+
+
+if(!userData.user){
+
+alert("请先登录");
+
+location.href="index.html";
+
+}
+
+
+
+
+// 查询用户资料
+
+const {
+
+data,
+
+error
+
+}=
+
+await supabase
+
+.from("profiles")
+
+.select("*")
+
+.eq(
+"id",
+userData.user.id
+)
+
+.single();
+
+
+
+
+
+if(error){
+
+alert("没有找到个人资料");
+
+console.log(error);
+
+}
+
+else{
+
+
+// 显示头像
+
+if(data.avatar){
 
 document.getElementById("avatar")
 .src=data.avatar;
+
+}
+
 
 
 
@@ -111,12 +180,14 @@ document.getElementById("intro")
 
 
 document.getElementById("phone")
-.href="tel:"+data.phone;
+.href=
+"tel:"+data.phone;
 
 
 
 document.getElementById("email")
-.href="mailto:"+data.email;
+.href=
+"mailto:"+data.email;
 
 
 
@@ -125,11 +196,18 @@ document.getElementById("github")
 
 
 
-function edit(){
+}
 
-location.href="index.html";
+
+
+
+
+window.edit=function(){
+
+location.href="profile.html";
 
 }
+
 
 
 </script>
