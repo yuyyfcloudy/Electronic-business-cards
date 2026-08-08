@@ -5,13 +5,14 @@ box-sizing:border-box;
 }
 
 
+
 body{
 
 
 margin:0;
 
 
-min-height:100vh;
+height:100vh;
 
 
 display:flex;
@@ -23,25 +24,20 @@ justify-content:center;
 align-items:center;
 
 
-background:#f2f2f2;
+background:#f1f1f1;
 
 
-font-family:
-"Microsoft YaHei",
-Arial;
-
-
-transition:0.3s;
+font-family:"Microsoft YaHei";
 
 
 }
 
 
 
-.card{
+.box,.card{
 
 
-width:380px;
+width:360px;
 
 
 background:white;
@@ -50,14 +46,72 @@ background:white;
 padding:30px;
 
 
-border-radius:25px;
+border-radius:20px;
 
 
 text-align:center;
 
 
 box-shadow:
-0 10px 30px rgba(0,0,0,0.15);
+0 10px 30px #ccc;
+
+
+}
+
+
+
+
+input,textarea{
+
+
+width:90%;
+
+
+padding:12px;
+
+
+margin:8px;
+
+
+border-radius:10px;
+
+
+border:1px solid #ddd;
+
+
+}
+
+
+
+textarea{
+
+
+height:100px;
+
+
+}
+
+
+
+button{
+
+
+padding:12px 25px;
+
+
+border:none;
+
+
+background:#1677ff;
+
+
+color:white;
+
+
+border-radius:10px;
+
+
+cursor:pointer;
 
 
 }
@@ -80,40 +134,7 @@ border-radius:50%;
 object-fit:cover;
 
 
-border:5px solid white;
-
-
 }
-
-
-
-h1{
-
-margin-bottom:5px;
-
-}
-
-
-
-h3{
-
-color:#666;
-
-}
-
-
-
-.intro{
-
-
-line-height:1.8;
-
-
-color:#555;
-
-
-}
-
 
 
 
@@ -124,10 +145,10 @@ color:#555;
 display:block;
 
 
-margin:12px;
+margin:10px;
 
 
-padding:13px;
+padding:12px;
 
 
 background:#1677ff;
@@ -136,169 +157,10 @@ background:#1677ff;
 color:white;
 
 
+border-radius:10px;
+
+
 text-decoration:none;
-
-
-border-radius:12px;
-
-
-transition:.3s;
-
-
-}
-
-
-
-.buttons a:hover{
-
-
-transform:scale(1.05);
-
-
-background:#005ccc;
-
-
-}
-
-
-
-
-
-.skills span{
-
-
-display:inline-block;
-
-
-padding:8px 15px;
-
-
-margin:5px;
-
-
-background:#eee;
-
-
-border-radius:20px;
-
-
-}
-
-
-
-
-
-.project{
-
-
-background:#f7f7f7;
-
-
-padding:15px;
-
-
-margin:15px 0;
-
-
-border-radius:15px;
-
-
-}
-
-
-
-
-.qrcode{
-
-
-width:180px;
-
-
-}
-
-
-
-
-#themeBtn{
-
-
-position:fixed;
-
-
-top:20px;
-
-
-right:20px;
-
-
-border:none;
-
-
-padding:12px;
-
-
-border-radius:50%;
-
-
-cursor:pointer;
-
-
-font-size:20px;
-
-
-}
-
-
-
-
-/* 深色模式 */
-
-
-.dark{
-
-
-background:#121212;
-
-}
-
-
-
-.dark .card{
-
-
-background:#222;
-
-
-color:white;
-
-
-}
-
-
-
-.dark .intro{
-
-
-color:#ccc;
-
-
-}
-
-
-
-.dark .project{
-
-
-background:#333;
-
-
-}
-
-
-.dark .skills span{
-
-
-background:#444;
 
 
 }

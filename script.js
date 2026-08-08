@@ -1,32 +1,58 @@
-let btn=
-document.getElementById("themeBtn");
+function saveCard(){
 
 
 
-btn.onclick=function(){
+let card={
 
 
-document.body.classList.toggle("dark");
+name:
+document.getElementById("name").value,
+
+
+job:
+document.getElementById("job").value,
+
+
+intro:
+document.getElementById("intro").value,
+
+
+phone:
+document.getElementById("phone").value,
+
+
+email:
+document.getElementById("email").value,
+
+
+github:
+document.getElementById("github").value,
+
+
+avatar:
+document.getElementById("avatar").value
 
 
 
-if(
-document.body.classList.contains("dark")
-)
+};
 
-{
 
-btn.innerHTML="☀️";
 
-}
+localStorage.setItem(
 
-else
+"card",
 
-{
+JSON.stringify(card)
 
-btn.innerHTML="🌙";
+);
 
-}
+
+
+alert("创建成功");
+
+
+
+location.href="card.html";
 
 
 }
