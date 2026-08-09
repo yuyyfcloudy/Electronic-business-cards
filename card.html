@@ -20,6 +20,21 @@
 </div>
 
 <button onclick="edit()">修改资料</button>
+<button onclick="changePassword()" style="margin-left:10px;background:#52c41a;">修改密码</button>
+</div>
+
+<!-- 修改密码弹窗 -->
+<div id="pwdModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:100;">
+  <div style="background:white;padding:30px;border-radius:15px;width:320px;text-align:center;">
+    <h3 style="margin-top:0;">修改密码</h3>
+    <input type="password" id="oldPwd" placeholder="请输入原密码" style="width:90%;padding:12px;margin:8px;border-radius:10px;border:1px solid #ddd;">
+    <input type="password" id="newPwd" placeholder="请输入新密码" style="width:90%;padding:12px;margin:8px;border-radius:10px;border:1px solid #ddd;">
+    <input type="password" id="confirmPwd" placeholder="确认新密码" style="width:90%;padding:12px;margin:8px;border-radius:10px;border:1px solid #ddd;">
+    <div style="margin-top:15px;">
+      <button onclick="submitChangePassword()" style="padding:10px 20px;border:none;background:#1677ff;color:white;border-radius:10px;cursor:pointer;margin-right:10px;">确认</button>
+      <button onclick="closePwdModal()" style="padding:10px 20px;border:none;background:#ccc;color:#333;border-radius:10px;cursor:pointer;">取消</button>
+    </div>
+  </div>
 </div>
 
 <script type="module">
@@ -47,11 +62,9 @@ import { supabase } from "./supabase.js";
             return;
         }
         
-        // 显示头像
         if (data.avatar) {
             document.getElementById("avatar").src = data.avatar;
         }
-        
         document.getElementById("name").textContent = data.name || "";
         document.getElementById("job").textContent = data.job || "";
         document.getElementById("intro").textContent = data.intro || "";
@@ -74,6 +87,64 @@ import { supabase } from "./supabase.js";
 
 window.edit = function(){
     location.href = "profile.html";
+}
+
+window.changePassword = function(){
+    document.getElementById("pwdModal").style.display = "flex";
+}
+
+window.closePwdModal = function(){
+    document.getElementById("pwdModal").style.display = "none";
+    document.getElementById("oldPwd").value = "";
+    document.getElementById("newPwd").value = "";
+    document.getElementById("confirmPwd").value = "";
+}
+
+window.submitChangePassword = async function(){
+    const oldPwd = document.getElementById("oldPwd").value;
+    const newPwd = document.getElementById("newPwd").value;
+    const confirmPwd = document.getElementById("confirmPwd").value;
+    
+    if(!oldPwd || !newPwd || !confirmPwd){
+        alert("请填写所有密码");
+        return;
+    }
+    if(newPwd !== confirmPwd){
+        alert("两次输入的新密码不一致");
+        return;
+    }
+    if(newPwd.length < 6){
+        alert("新密码至少6位");
+        return;
+    }
+    
+    const { data: userData } = await supabase.auth.getUser();
+    if(!userData.user){
+        alert("请先登录");
+        return;
+    }
+    
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: userData.user.email,
+        password: oldPwd
+    });
+    
+    if(signInError){
+        alert("原密码错误");
+        return;
+    }
+    
+    const { error: updateError } = await supabase.auth.updateUser({
+        password: newPwd
+    });
+    
+    if(updateError){
+        alert("修改失败: " + updateError.message);
+    } else {
+        alert("密码修改成功，请重新登录");
+        await supabase.auth.signOut();
+        location.href = "index.html";
+    }
 }
 </script>
 
