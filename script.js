@@ -109,107 +109,56 @@ window.login = async function(){
 // =====================
 
 window.saveProfile = async function(){
-
-
-
     // 获取当前用户
-
-    const {
-
-        data:userData
-
-    } = await supabase.auth.getUser();
-
-
-
-
+    const { data: userData } = await supabase.auth.getUser();
+    
     if(!userData.user){
-
         alert("请先登录");
-
         location.href="index.html";
-
         return;
-
     }
 
-
-
+    let avatarUrl = "";
+    const fileInput = document.getElementById("avatar");
+    
+    // 如果有选择图片，转成 base64
+    if(fileInput.files && fileInput.files[0]){
+        const file = fileInput.files[0];
+        
+        // 限制图片大小（最大 2MB）
+        if(file.size > 2 * 1024 * 1024){
+            alert("图片太大，请选择 2MB 以内的图片");
+            return;
+        }
+        
+        avatarUrl = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(file);
+        });
+    }
 
     let profile = {
-
-
-        id:
-        userData.user.id,
-
-
-        name:
-        document.getElementById("name").value,
-
-
-        job:
-        document.getElementById("job").value,
-
-
-        intro:
-        document.getElementById("intro").value,
-
-
-        phone:
-        document.getElementById("phone").value,
-
-
-        email:
-        document.getElementById("email").value,
-
-
-        github:
-        document.getElementById("github").value,
-
-
-        avatar:
-        document.getElementById("avatar").value
-
-
+        id: userData.user.id,
+        name: document.getElementById("name").value,
+        job: document.getElementById("job").value,
+        intro: document.getElementById("intro").value,
+        phone: document.getElementById("phone").value,
+        email: document.getElementById("email").value,
+        github: document.getElementById("github").value,
+        avatar: avatarUrl
     };
 
-
-
-
-    const {
-
-        error
-
-    } = await supabase
-
-    .from("profiles")
-
-    .upsert(profile);
-
-
-
+    const { error } = await supabase
+        .from("profiles")
+        .upsert(profile);
 
     if(error){
-
-
         alert(error.message);
-
-
         console.log(error);
-
-
     }
-
     else{
-
-
         alert("保存成功");
-
-
         location.href="card.html";
-
-
     }
-
-
 }
