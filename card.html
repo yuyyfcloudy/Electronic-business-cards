@@ -85,61 +85,63 @@ src="images/avatar.jpg">
 <script type="module">
 import { supabase } from "./supabase.js";
 
-try {
-    // 获取当前用户
-    const { data: userData } = await supabase.auth.getUser();
-    
-    if (!userData.user) {
-        alert("请先登录");
-        location.href = "index.html";
-        return;
-    }
-    
-    console.log("当前用户ID:", userData.user.id);
-    
-    // 查询资料
-    const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userData.user.id)
-        .maybeSingle();
-    
-    console.log("查询结果:", data, error);
-    
-    if (error) {
-        alert("查询出错: " + error.message);
-        console.error(error);
-        return;
-    }
-    
-    if (!data) {
-        alert("还没有创建名片，请填写资料");
-        location.href = "profile.html";
-        return;
-    }
-    
-    // 显示资料
-    if (data.avatar) {
-        document.getElementById("avatar").src = data.avatar;
-    }
-    document.getElementById("name").textContent = data.name || "未设置姓名";
-    document.getElementById("job").textContent = data.job || "";
-    document.getElementById("intro").textContent = data.intro || "";
-    
-    if (data.phone) {
-        document.getElementById("phone").href = "tel:" + data.phone;
-    }
-    if (data.email) {
-        document.getElementById("email").href = "mailto:" + data.email;
-    }
-    if (data.github) {
-        document.getElementById("github").href = data.github;
-    }
+(async function() {
+    try {
+        // 获取当前用户
+        const { data: userData } = await supabase.auth.getUser();
+        
+        if (!userData.user) {
+            alert("请先登录");
+            location.href = "index.html";
+            return;
+        }
+        
+        console.log("当前用户ID:", userData.user.id);
+        
+        // 查询资料
+        const { data, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", userData.user.id)
+            .maybeSingle();
+        
+        console.log("查询结果:", data, error);
+        
+        if (error) {
+            alert("查询出错: " + error.message);
+            console.error(error);
+            return;
+        }
+        
+        if (!data) {
+            alert("还没有创建名片，请填写资料");
+            location.href = "profile.html";
+            return;
+        }
+        
+        // 显示资料
+        if (data.avatar) {
+            document.getElementById("avatar").src = data.avatar;
+        }
+        document.getElementById("name").textContent = data.name || "未设置姓名";
+        document.getElementById("job").textContent = data.job || "";
+        document.getElementById("intro").textContent = data.intro || "";
+        
+        if (data.phone) {
+            document.getElementById("phone").href = "tel:" + data.phone;
+        }
+        if (data.email) {
+            document.getElementById("email").href = "mailto:" + data.email;
+        }
+        if (data.github) {
+            document.getElementById("github").href = data.github;
+        }
 
-} catch (err) {
-    console.error("页面异常:", err);
-    alert("加载出错: " + err.message);
-}
+    } catch (err) {
+        console.error("页面异常:", err);
+        alert("加载出错: " + err.message);
+    }
+})();
 
 window.edit = function(){
     location.href = "profile.html";
