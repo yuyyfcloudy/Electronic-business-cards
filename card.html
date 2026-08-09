@@ -141,11 +141,13 @@ userData.user.id
 
 
 
-if(error){
+if(error || !data){
 
-alert("没有找到个人资料");
+alert("还没有创建名片，请填写资料");
 
-console.log(error);
+location.href = "profile.html";
+
+return;
 
 }
 

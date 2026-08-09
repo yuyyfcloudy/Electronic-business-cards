@@ -83,7 +83,18 @@ window.login = async function(){
 
         alert("登录成功");
 
-        location.href="profile.html";
+        // 检查是否已有名片资料
+        const { data: profileData } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("id", data.user.id)
+            .maybeSingle();
+
+        if(profileData){
+            location.href = "card.html";
+        } else {
+            location.href = "profile.html";
+        }
 
     }
 
