@@ -7,42 +7,35 @@ import { supabase } from "./supabase.js";
 // =====================
 
 window.register = async () => {
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+    let confirmPassword = document.getElementById("confirmPassword").value;
 
-    let email =
-    document.getElementById("email").value;
+    // 检查两次密码是否一致
+    if(password !== confirmPassword){
+        alert("两次输入的密码不一致");
+        return;
+    }
 
+    // 检查密码长度
+    if(password.length < 6){
+        alert("密码至少6位");
+        return;
+    }
 
-    let password =
-    document.getElementById("password").value;
-
-
-
-    const {data,error} =
-    await supabase.auth.signUp({
-
+    const {data, error} = await supabase.auth.signUp({
         email: email,
-
         password: password
-
     });
 
-
-
     if(error){
-
         alert(error.message);
-
     }
     else{
-
         alert("注册成功，请登录");
-
         location.href="index.html";
-
     }
-
 }
-
 
 
 
