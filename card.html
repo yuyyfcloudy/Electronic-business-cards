@@ -97,7 +97,7 @@ try {
     
     console.log("当前用户ID:", userData.user.id);
     
-    // 查询资料（用 maybeSingle 不会报错）
+    // 查询资料
     const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -144,131 +144,6 @@ try {
 window.edit = function(){
     location.href = "profile.html";
 }
-</script>
-
-
-
-// 获取登录用户
-
-const {
-
-data:userData
-
-}=
-
-await supabase.auth.getUser();
-
-
-
-if(!userData.user){
-
-alert("请先登录");
-
-location.href="index.html";
-
-}
-
-
-
-
-// 查询用户资料
-
-const {
-
-data,
-
-error
-
-}=
-
-await supabase
-
-.from("profiles")
-
-.select("*")
-
-.eq(
-"id",
-userData.user.id
-)
-
-.single();
-
-
-
-
-
-if(error || !data){
-
-alert("还没有创建名片，请填写资料");
-
-location.href = "profile.html";
-
-return;
-
-}
-
-else{
-
-
-// 显示头像
-
-if(data.avatar){
-
-document.getElementById("avatar")
-.src=data.avatar;
-
-}
-
-
-
-
-document.getElementById("name")
-.innerHTML=data.name;
-
-
-
-document.getElementById("job")
-.innerHTML=data.job;
-
-
-
-document.getElementById("intro")
-.innerHTML=data.intro;
-
-
-
-document.getElementById("phone")
-.href=
-"tel:"+data.phone;
-
-
-
-document.getElementById("email")
-.href=
-"mailto:"+data.email;
-
-
-
-document.getElementById("github")
-.href=data.github;
-
-
-
-}
-
-
-
-
-
-window.edit=function(){
-
-location.href="profile.html";
-
-}
-
-
-
 </script>
 
 
