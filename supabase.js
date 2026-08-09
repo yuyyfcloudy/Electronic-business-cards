@@ -4,7 +4,7 @@ from
 
 
 const supabaseUrl =
-"https://qzxzsnxrjppfjnxxmxkt.supabase.co/rest/v1/"
+"https://qzxzsnxrjppfjnxxmxkt.supabase.co"
 
 
 const supabaseKey =
