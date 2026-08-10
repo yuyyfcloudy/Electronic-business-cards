@@ -19,8 +19,8 @@
 <a id="github">💻 GitHub</a>
 </div>
 
-<button onclick="edit()">修改资料</button>
-<button onclick="changePassword()" style="margin-left:10px;background:#52c41a;">修改密码</button>
+<button onclick="edit()" id="editBtn">修改资料</button>
+<button onclick="changePassword()" id="pwdBtn" style="margin-left:10px;background:#52c41a;">修改密码</button>
 </div>
 
 <!-- 修改密码弹窗 -->
@@ -87,6 +87,13 @@ import { supabase } from "./supabase.js";
         if(data.github){
             document.getElementById("github").href = data.github;
         }
+	// 判断是否是看自己的名片，不是就隐藏编辑按钮
+	const { data: currentUser } = await supabase.auth.getUser();
+	if(targetId && (!currentUser.user || currentUser.user.id !== targetId)){
+	    document.getElementById("editBtn").style.display = "none";
+	    document.getElementById("pwdBtn").style.display = "none";
+	}
+	
 
         // ========== 关键改动 3：看别人的名片时隐藏编辑按钮 ==========
         const { data: currentUser } = await supabase.auth.getUser();
