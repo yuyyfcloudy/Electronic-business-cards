@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>名片广场</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.user-card {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 15px #ccc;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.user-card:hover {
+    transform: translateY(-5px);
+}
+.user-card img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.user-card h3 {
+    margin: 10px 0 5px;
+}
+.user-card p {
+    color: #666;
+    margin: 0;
+}
+h1 {
+    text-align: center;
+    margin-top: 30px;
+}
+.nav {
+    text-align: center;
+    margin: 20px;
+}
+.nav a {
+    color: #1677ff;
+    text-decoration: none;
+    margin: 0 10px;
+}
+</style>
+</head>
+<body>
+
+<div class="nav">
+    <a href="index.html">🏠 首页</a>
+    <a href="users.html">📇 名片广场</a>
+</div>
+
+<h1>📇 名片广场</h1>
+
+<div class="grid" id="userList">
+    <p style="text-align:center;width:100%;">加载中...</p>
+</div>
+
+<script type="module">
+import { supabase } from "./supabase.js";
+
+(async function(){
+    // 查询所有用户的名片（只拿公开字段）
+    const { data, error } = await supabase
+        .from("profiles")
+        .select("id, name, job, avatar");
+    
+    const list = document.getElementById("userList");
+    
+    if(error){
+        list.innerHTML = "<p style='text-align:center;'>加载失败: " + error.message + "</p>";
+        console.error(error);
+        return;
+    }
+    
+    if(!data || data.length === 0){
+        list.innerHTML = "<p style='text-align:center;'>还没有人创建名片</p>";
+        return;
+    }
+    
+    // 渲染网格
+    list.innerHTML = data.map(user => `
+        <div class="user-card" onclick="location.href='card.html?id=${user.id}'">
+            <img src="${user.avatar || 'images/avatar.jpg'}" 
+                 onerror="this.src='images/avatar.jpg'" alt="头像">
+            <h3>${user.name || '未命名'}</h3>
+            <p>${user.job || ''}</p>
+        </div>
+    `).join('');
+})();
+</script>
+
+</body>
+</html>

@@ -42,44 +42,61 @@ import { supabase } from "./supabase.js";
 
 (async function() {
     try {
-        const { data: userData } = await supabase.auth.getUser();
+        // ========== 关键改动 1：从 URL 获取用户 ID ==========
+        const urlParams = new URLSearchParams(window.location.search);
+        let targetId = urlParams.get('id');
         
-        if (!userData.user) {
-            alert("请先登录");
-            location.href = "index.html";
-            return;
+        // 如果 URL 没有 id 参数，查当前登录用户
+        if(!targetId){
+            const { data: userData } = await supabase.auth.getUser();
+            if(!userData.user){
+                alert("请先登录");
+                location.href = "index.html";
+                return;
+            }
+            targetId = userData.user.id;
         }
         
+        // ========== 关键改动 2：查询名片（匿名也能查）==========
         const { data, error } = await supabase
             .from("profiles")
             .select("*")
-            .eq("id", userData.user.id)
+            .eq("id", targetId)
             .maybeSingle();
         
-        if (error || !data) {
-            alert("还没有创建名片，请填写资料");
-            location.href = "profile.html";
+        if(error || !data){
+            alert("名片不存在");
+            location.href = "users.html";
             return;
         }
         
-        if (data.avatar) {
+        // 显示资料（和之前一样）
+        if(data.avatar){
             document.getElementById("avatar").src = data.avatar;
         }
         document.getElementById("name").textContent = data.name || "";
         document.getElementById("job").textContent = data.job || "";
         document.getElementById("intro").textContent = data.intro || "";
         
-        if (data.phone) {
+        if(data.phone){
             document.getElementById("phone").href = "tel:" + data.phone;
         }
-        if (data.email) {
+        if(data.email){
             document.getElementById("email").href = "mailto:" + data.email;
         }
-        if (data.github) {
+        if(data.github){
             document.getElementById("github").href = data.github;
         }
 
-    } catch (err) {
+        // ========== 关键改动 3：看别人的名片时隐藏编辑按钮 ==========
+        const { data: currentUser } = await supabase.auth.getUser();
+        if(targetId && (!currentUser.user || currentUser.user.id !== targetId)){
+            document.querySelector('button[onclick="edit()"]').style.display = "none";
+            const pwdBtn = document.querySelector('button[onclick="changePassword()"]');
+            if(pwdBtn) pwdBtn.style.display = "none";
+        }
+
+    } catch(err) {
         console.error(err);
         alert("加载出错");
     }
@@ -87,19 +104,18 @@ import { supabase } from "./supabase.js";
 
 window.edit = function(){
     location.href = "profile.html";
-}
+};
 
+// 保留你之前的改密码代码（如果有的话）
 window.changePassword = function(){
     document.getElementById("pwdModal").style.display = "flex";
-}
-
+};
 window.closePwdModal = function(){
     document.getElementById("pwdModal").style.display = "none";
     document.getElementById("oldPwd").value = "";
     document.getElementById("newPwd").value = "";
     document.getElementById("confirmPwd").value = "";
-}
-
+};
 window.submitChangePassword = async function(){
     const oldPwd = document.getElementById("oldPwd").value;
     const newPwd = document.getElementById("newPwd").value;
@@ -145,8 +161,7 @@ window.submitChangePassword = async function(){
         await supabase.auth.signOut();
         location.href = "index.html";
     }
-}
+};
 </script>
-
 </body>
 </html>
