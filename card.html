@@ -95,13 +95,6 @@ import { supabase } from "./supabase.js";
 	}
 	
 
-        // ========== 关键改动 3：看别人的名片时隐藏编辑按钮 ==========
-        const { data: currentUser } = await supabase.auth.getUser();
-        if(targetId && (!currentUser.user || currentUser.user.id !== targetId)){
-            document.querySelector('button[onclick="edit()"]').style.display = "none";
-            const pwdBtn = document.querySelector('button[onclick="changePassword()"]');
-            if(pwdBtn) pwdBtn.style.display = "none";
-        }
 
     } catch(err) {
         console.error(err);

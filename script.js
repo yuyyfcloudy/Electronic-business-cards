@@ -131,17 +131,20 @@ window.saveProfile = async function(){
         });
     }
 
-    let profile = {
-        id: userData.user.id,
-        name: document.getElementById("name").value,
-        job: document.getElementById("job").value,
-        intro: document.getElementById("intro").value,
-        phone: document.getElementById("phone").value,
-        email: document.getElementById("email").value,
-        github: document.getElementById("github").value,
-        avatar: avatarUrl
-    };
+let profile = {
+    id: userData.user.id,
+    name: document.getElementById("name").value,
+    job: document.getElementById("job").value,
+    intro: document.getElementById("intro").value,
+    phone: document.getElementById("phone").value,
+    email: document.getElementById("email").value,
+    github: document.getElementById("github").value,
+};
 
+// 只有选了新图片才更新头像，否则保留原来的
+if(avatarUrl){
+    profile.avatar = avatarUrl;
+}
     const { error } = await supabase
         .from("profiles")
         .upsert(profile);
