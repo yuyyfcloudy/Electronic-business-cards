@@ -28,7 +28,7 @@ window.register = async () => {
         alert(error.message);
     }
     else{
-        alert("注册成功，请登录");
+        alert("注册成功！请前往邮箱查收确认邮件，点击链接激活账号后再登录");
         location.href="index.html";
     }
 }
