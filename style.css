@@ -280,11 +280,12 @@ input[type="file"]:hover {
 }
 
 .nav {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 40px;
-    padding: 18px 30px;
+    padding: 18px 40px;
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);

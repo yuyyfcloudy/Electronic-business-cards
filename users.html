@@ -345,7 +345,18 @@ async function fetchData() {
     }
 
     allData = data || [];
-    render(data);
+    
+    // 如果搜索框有内容，保持当前搜索结果
+    const keyword = document.getElementById("searchInput").value.toLowerCase().trim();
+    if (keyword) {
+        const filtered = allData.filter(u => 
+            (u.name || "").toLowerCase().includes(keyword) ||
+            (u.job || "").toLowerCase().includes(keyword)
+        );
+        render(filtered);
+    } else {
+        render(data);
+    }
 }
 
 // 首次加载
