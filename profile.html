@@ -25,5 +25,33 @@
 <button onclick="saveProfile()">保存名片</button>
 </div>
 <script type="module" src="script.js"></script>
+<script type="module">
+import { supabase } from "./supabase.js";
+
+(async function(){
+    const { data: userData } = await supabase.auth.getUser();
+    if(!userData.user) return;
+    
+    // 查询已有资料并填充
+    const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userData.user.id)
+        .maybeSingle();
+    
+    if(data){
+        document.getElementById("name").value = data.name || "";
+        document.getElementById("job").value = data.job || "";
+        document.getElementById("intro").value = data.intro || "";
+        document.getElementById("phone").value = data.phone || "";
+        document.getElementById("email").value = data.email || "";
+        document.getElementById("github").value = data.github || "";
+        
+        // 按钮文字改为"保存修改"
+        const btn = document.querySelector('button[onclick="saveProfile()"]');
+        if(btn) btn.textContent = "💾 保存修改";
+    }
+})();
+</script>
 </body>
 </html>

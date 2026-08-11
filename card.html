@@ -228,18 +228,23 @@ function getRandomQuote() {
         const { data: currentUser } = await supabase.auth.getUser();
         isOwner = currentUser.user && currentUser.user.id === targetId;
 
-        if(isOwner){
+        const fromSquare = urlParams.has('id');
+
+        if(isOwner && !fromSquare){
+            // 直接访问 card.html（无id参数）才显示编辑按钮
             document.getElementById("actionBlock").style.display = "block";
             document.getElementById("logoutBtn").style.display = "inline-flex";
             document.getElementById("welcomeBar").style.display = "flex";
             document.getElementById("welcomeText").textContent = getRandomQuote();
 
-            // 显示完整注册时间
             if(currentUser.user && currentUser.user.created_at){
                 const d = new Date(currentUser.user.created_at);
                 document.getElementById("joinDate").textContent = 
                     d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
             }
+        } else if (isOwner && fromSquare) {
+            // 从广场进入自己的名片，只能看，不能改
+            document.getElementById("logoutBtn").style.display = "inline-flex";
         }
 
     } catch(err) {

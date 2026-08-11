@@ -12,6 +12,8 @@
 <nav class="nav">
     <a href="index.html">🏠 首页</a>
     <a href="users.html">📇 名片广场</a>
+    <input type="text" id="searchInput" placeholder="🔍 搜索姓名或职位..." 
+           style="padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.8);width:220px;outline:none;font-size:14px;">
 </nav>
 
 <header class="page-header">
@@ -27,6 +29,22 @@
 import { supabase } from "./supabase.js";
 
 const list = document.getElementById("userList");
+let allData = [];
+
+document.getElementById("searchInput").addEventListener("input", (e) => {
+    const keyword = e.target.value.toLowerCase().trim();
+    if (!keyword) {
+        render(allData);
+        return;
+    }
+    const filtered = allData.filter(u => 
+        (u.name || "").toLowerCase().includes(keyword) ||
+        (u.job || "").toLowerCase().includes(keyword)
+    );
+    render(filtered);
+});
+
+
 // 维护已渲染卡片的映射：id -> { el, refs }
 const cardMap = new Map();
 let isFirstLoad = true;
@@ -326,6 +344,7 @@ async function fetchData() {
         return;
     }
 
+    allData = data || [];
     render(data);
 }
 
