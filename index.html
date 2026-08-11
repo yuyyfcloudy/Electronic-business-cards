@@ -1,79 +1,112 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>电子名片登录</title>
-
 <link rel="stylesheet" href="style.css">
-
+<base target="_blank">
 </head>
+<body class="login-body">
 
+<!-- 动态背景粒子 -->
+<div class="login-bg" id="loginBg"></div>
 
-<body>
+<div class="login-wrap">
+  <!-- 左侧：欢迎语 -->
+  <div class="login-welcome">
+    <div class="login-brand">📇 电子名片系统</div>
+    <h1 class="login-title">连接<br>每一次相遇</h1>
+    <div class="login-quote" id="loginQuote">
+      <span class="quote-mark">"</span>
+      <span id="quoteText">欢迎回来，你的名片已经等不及要见人了</span>
+      <span class="quote-mark">"</span>
+    </div>
+    <div class="login-features">
+      <div class="feature-item">
+        <span class="feature-icon">⚡</span>
+        <span>3 秒创建名片</span>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🌐</span>
+        <span>随时随地分享</span>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🔒</span>
+        <span>数据安全加密</span>
+      </div>
+    </div>
+  </div>
 
+  <!-- 右侧：登录表单 -->
+  <div class="login-panel">
+    <div class="login-box">
+      <h2>欢迎登录</h2>
+      <p class="login-sub">输入账号，开启你的数字身份</p>
 
-<div class="box">
+      <div class="login-field">
+        <label>邮箱地址</label>
+        <input id="email" type="email" placeholder="name@example.com">
+      </div>
 
+      <div class="login-field">
+        <label>密码</label>
+        <input id="password" type="password" placeholder="请输入密码">
+      </div>
 
-<h1>
-电子名片系统
-</h1>
+      <button onclick="login()" class="login-btn">登 录</button>
 
-
-<input 
-id="email"
-type="email"
-placeholder="请输入邮箱">
-
-
-<input 
-id="password"
-type="password"
-placeholder="请输入密码">
-
-
-
-<button onclick="login()">
-
-登录
-
-</button>
-
-
-<p>
-
-还没有账号？
-
-<a href="register.html">
-立即注册
-</a>
-
-</p>
-
-
-
-<p>
-    <a href="users.html">📇 名片广场（无需登录）</a>
-</p>
-
-
+      <div class="login-links">
+        <span>还没有账号？<a href="register.html">立即注册</a></span>
+        <a href="users.html">📇 名片广场</a>
+      </div>
+    </div>
+  </div>
 </div>
 
+<script type="module" src="script.js"></script>
+<script>
+// 幽默欢迎语轮播
+const quotes = [
+  "欢迎回来，你的名片已经等不及要见人了",
+  "登录成功 = 名片上线 = 人生开挂",
+  "这里没有验证码，只有你的帅气/美丽",
+  "你的电子名片，比你更懂社交",
+  "忘记密码？不，你忘不了自己的优秀",
+  "今日已登录 0 人，你是第一个！（大概）",
+  "别让名片空着，就像别让冰箱空着一样",
+  "每一次登录，都是一次自我展示的机会",
+  "你的名片，比你先一步认识新朋友",
+  "输入密码，解锁你的数字人生"
+];
 
+let qIdx = 0;
+const quoteText = document.getElementById("quoteText");
 
+function rotateQuote() {
+  quoteText.style.opacity = 0;
+  setTimeout(() => {
+    qIdx = (qIdx + 1) % quotes.length;
+    quoteText.textContent = quotes[qIdx];
+    quoteText.style.opacity = 1;
+  }, 400);
+}
 
-<script 
-type="module"
-src="script.js">
+setInterval(rotateQuote, 5000);
 
+// 背景粒子
+const bg = document.getElementById("loginBg");
+for (let i = 0; i < 40; i++) {
+  const dot = document.createElement("div");
+  dot.className = "login-dot";
+  dot.style.left = Math.random() * 100 + "%";
+  dot.style.top = Math.random() * 100 + "%";
+  dot.style.width = (Math.random() * 3 + 1) + "px";
+  dot.style.height = dot.style.width;
+  dot.style.animationDuration = (Math.random() * 15 + 10) + "s";
+  dot.style.animationDelay = (Math.random() * 10) + "s";
+  bg.appendChild(dot);
+}
 </script>
-
-
 </body>
-
 </html>

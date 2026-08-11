@@ -2,37 +2,120 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>我的电子名片</title>
 <link rel="stylesheet" href="style.css">
+<base target="_blank">
 </head>
-<body>
+<body class="profile-body">
 
-<div class="card">
-<img id="avatar" class="avatar" src="images/avatar.jpg" alt="头像">
-<h1 id="name">加载中...</h1>
-<h3 id="job"></h3>
-<p id="intro"></p>
+<!-- 顶部导航 -->
+<nav class="profile-nav">
+  <a href="users.html" class="nav-back">← 名片广场</a>
+  <span class="nav-title">电子名片</span>
+  <a href="index.html" class="nav-logout" id="logoutBtn" style="display:none;" onclick="doLogout()">退出登录</a>
+</nav>
 
-<div class="buttons">
-<a id="phone">📞 电话</a>
-<a id="email">✉ 邮箱</a>
-<a id="github">💻 GitHub</a>
-</div>
+<div class="profile-wrap">
+  <!-- 左侧边栏 -->
+  <aside class="profile-sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-avatar-wrap">
+        <img id="avatar" class="sidebar-avatar" src="" alt="头像">
+        <div class="sidebar-status"></div>
+      </div>
+      <h1 id="name" class="sidebar-name">加载中...</h1>
+      <p id="job" class="sidebar-job"></p>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-meta">
+        <div class="meta-row">
+          <span class="meta-label">用户 ID</span>
+          <span class="meta-value" id="userId">—</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">注册时间</span>
+          <span class="meta-value" id="joinDate">—</span>
+        </div>
+      </div>
+    </div>
+  </aside>
 
-<button onclick="edit()" id="editBtn">修改资料</button>
-<button onclick="changePassword()" id="pwdBtn" style="margin-left:10px;background:#52c41a;">修改密码</button>
+  <!-- 主内容区 -->
+  <main class="profile-main">
+    <!-- 欢迎横幅 — 仅主人可见 -->
+    <div class="welcome-bar" id="welcomeBar" style="display:none;">
+      <span class="welcome-icon">👋</span>
+      <span class="welcome-text" id="welcomeText">欢迎回来！</span>
+    </div>
+
+    <!-- 简介区块 — 引文风格 -->
+    <section class="info-block block-quote">
+      <div class="block-header">
+        <span class="block-icon">💬</span>
+        <span class="block-title">个人简介</span>
+      </div>
+      <div class="block-body">
+        <p id="intro" class="quote-text">这位用户还没有填写个人介绍...</p>
+      </div>
+    </section>
+
+    <!-- 联系方式区块 — 卡片网格 -->
+    <section class="info-block block-contact">
+      <div class="block-header">
+        <span class="block-icon">📡</span>
+        <span class="block-title">联系方式</span>
+      </div>
+      <div class="block-body">
+        <div class="contact-grid">
+          <a id="phoneLink" class="contact-box" href="#">
+            <div class="contact-box-icon">📞</div>
+            <div class="contact-box-label">电话</div>
+            <div class="contact-box-value" id="phoneVal">未填写</div>
+          </a>
+          <a id="emailLink" class="contact-box" href="#">
+            <div class="contact-box-icon">✉️</div>
+            <div class="contact-box-label">邮箱</div>
+            <div class="contact-box-value" id="emailVal">未填写</div>
+          </a>
+          <a id="githubLink" class="contact-box" href="#">
+            <div class="contact-box-icon">💻</div>
+            <div class="contact-box-label">GitHub</div>
+            <div class="contact-box-value" id="githubVal">未填写</div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 管理操作区块 — 紧凑小卡片 -->
+    <section class="info-block block-action" id="actionBlock" style="display:none;">
+      <div class="block-header">
+        <span class="block-icon">⚙️</span>
+        <span class="block-title">管理操作</span>
+      </div>
+      <div class="block-body action-body-compact">
+        <div class="action-mini-row">
+          <span class="action-mini-label">✏️ 编辑资料</span>
+          <button onclick="edit()" class="action-mini-btn action-mini-btn-primary">编辑</button>
+        </div>
+        <div class="action-mini-row">
+          <span class="action-mini-label">🔒 修改密码</span>
+          <button onclick="changePassword()" class="action-mini-btn action-mini-btn-secondary">修改</button>
+        </div>
+      </div>
+    </section>
+  </main>
 </div>
 
 <!-- 修改密码弹窗 -->
-<div id="pwdModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);justify-content:center;align-items:center;z-index:100;">
-  <div style="background:white;padding:30px;border-radius:15px;width:320px;text-align:center;">
-    <h3 style="margin-top:0;">修改密码</h3>
-    <input type="password" id="oldPwd" placeholder="请输入原密码" style="width:90%;padding:12px;margin:8px;border-radius:10px;border:1px solid #ddd;">
-    <input type="password" id="newPwd" placeholder="请输入新密码" style="width:90%;padding:12px;margin:8px;border-radius:10px;border:1px solid #ddd;">
-    <input type="password" id="confirmPwd" placeholder="确认新密码" style="width:90%;padding:12px;margin:8px;border-radius:10px;border:1px solid #ddd;">
-    <div style="margin-top:15px;">
-      <button onclick="submitChangePassword()" style="padding:10px 20px;border:none;background:#1677ff;color:white;border-radius:10px;cursor:pointer;margin-right:10px;">确认</button>
-      <button onclick="closePwdModal()" style="padding:10px 20px;border:none;background:#ccc;color:#333;border-radius:10px;cursor:pointer;">取消</button>
+<div id="pwdModal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>🔐 修改密码</h3>
+    <input type="password" id="oldPwd" placeholder="请输入原密码">
+    <input type="password" id="newPwd" placeholder="请输入新密码">
+    <input type="password" id="confirmPwd" placeholder="确认新密码">
+    <div class="modal-buttons">
+      <button onclick="submitChangePassword()">确认修改</button>
+      <button class="secondary" onclick="closePwdModal()">取消</button>
     </div>
   </div>
 </div>
@@ -40,13 +123,30 @@
 <script type="module">
 import { supabase } from "./supabase.js";
 
+let isOwner = false;
+
+const welcomeQuotes = [
+  "欢迎回来，今天也是闪闪发光的一天 ✨",
+  "嘿，你的名片正在帮你社交呢 👋",
+  "好久不见，这次想更新点什么？ 🤔",
+  "你的数字身份已就位，随时可以出发 🚀",
+  "欢迎回家，这里的一切都是你的 🏠",
+  "又见面了，今天有什么新故事？ 📖",
+  "登录成功，你的名片比你还积极 😄",
+  "欢迎回来，世界在等你的名片 🌍",
+  "今日已登录，请查收你的数字名片 📇",
+  "嘿，别来无恙，名片广场又热闹了 🎉"
+];
+
+function getRandomQuote() {
+  return welcomeQuotes[Math.floor(Math.random() * welcomeQuotes.length)];
+}
+
 (async function() {
     try {
-        // ========== 关键改动 1：从 URL 获取用户 ID ==========
         const urlParams = new URLSearchParams(window.location.search);
         let targetId = urlParams.get('id');
-        
-        // 如果 URL 没有 id 参数，查当前登录用户
+
         if(!targetId){
             const { data: userData } = await supabase.auth.getUser();
             if(!userData.user){
@@ -56,45 +156,91 @@ import { supabase } from "./supabase.js";
             }
             targetId = userData.user.id;
         }
-        
-        // ========== 关键改动 2：查询名片（匿名也能查）==========
+
         const { data, error } = await supabase
             .from("profiles")
             .select("*")
             .eq("id", targetId)
             .maybeSingle();
-        
+
         if(error || !data){
             alert("名片不存在");
             location.href = "users.html";
             return;
         }
-        
-        // 显示资料（和之前一样）
+
+        // 填充数据
         if(data.avatar){
             document.getElementById("avatar").src = data.avatar;
         }
-        document.getElementById("name").textContent = data.name || "";
-        document.getElementById("job").textContent = data.job || "";
-        document.getElementById("intro").textContent = data.intro || "";
-        
-        if(data.phone){
-            document.getElementById("phone").href = "tel:" + data.phone;
-        }
-        if(data.email){
-            document.getElementById("email").href = "mailto:" + data.email;
-        }
-        if(data.github){
-            document.getElementById("github").href = data.github;
-        }
-	// 判断是否是看自己的名片，不是就隐藏编辑按钮
-	const { data: currentUser } = await supabase.auth.getUser();
-	if(targetId && (!currentUser.user || currentUser.user.id !== targetId)){
-	    document.getElementById("editBtn").style.display = "none";
-	    document.getElementById("pwdBtn").style.display = "none";
-	}
-	
+        document.getElementById("name").textContent = data.name || "未命名";
+        document.getElementById("job").textContent = data.job || "暂无职位";
+        document.getElementById("userId").textContent = (data.id || "").slice(0, 12) + "...";
 
+        const introEl = document.getElementById("intro");
+        if(data.intro && data.intro.trim()){
+            introEl.textContent = data.intro;
+            introEl.classList.remove("empty");
+        } else {
+            introEl.textContent = "这位用户还没有填写个人介绍...";
+            introEl.classList.add("empty");
+        }
+
+        // 联系方式
+        const phoneVal = document.getElementById("phoneVal");
+        const phoneLink = document.getElementById("phoneLink");
+        if(data.phone){
+            phoneVal.textContent = data.phone;
+            phoneLink.href = "tel:" + data.phone;
+            phoneLink.classList.remove("disabled");
+        } else {
+            phoneVal.textContent = "未填写";
+            phoneLink.classList.add("disabled");
+            phoneLink.href = "#";
+        }
+
+        const emailVal = document.getElementById("emailVal");
+        const emailLink = document.getElementById("emailLink");
+        if(data.email){
+            emailVal.textContent = data.email;
+            emailLink.href = "mailto:" + data.email;
+            emailLink.classList.remove("disabled");
+        } else {
+            emailVal.textContent = "未填写";
+            emailLink.classList.add("disabled");
+            emailLink.href = "#";
+        }
+
+        const githubVal = document.getElementById("githubVal");
+        const githubLink = document.getElementById("githubLink");
+        if(data.github){
+            githubVal.textContent = truncate(data.github, 24);
+            githubLink.href = data.github;
+            githubLink.target = "_blank";
+            githubLink.classList.remove("disabled");
+        } else {
+            githubVal.textContent = "未填写";
+            githubLink.classList.add("disabled");
+            githubLink.href = "#";
+        }
+
+        // 判断是否是主人
+        const { data: currentUser } = await supabase.auth.getUser();
+        isOwner = currentUser.user && currentUser.user.id === targetId;
+
+        if(isOwner){
+            document.getElementById("actionBlock").style.display = "block";
+            document.getElementById("logoutBtn").style.display = "inline-flex";
+            document.getElementById("welcomeBar").style.display = "flex";
+            document.getElementById("welcomeText").textContent = getRandomQuote();
+
+            // 显示完整注册时间
+            if(currentUser.user && currentUser.user.created_at){
+                const d = new Date(currentUser.user.created_at);
+                document.getElementById("joinDate").textContent = 
+                    d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+            }
+        }
 
     } catch(err) {
         console.error(err);
@@ -102,11 +248,15 @@ import { supabase } from "./supabase.js";
     }
 })();
 
+function truncate(str, len){
+    if(!str) return "";
+    return str.length > len ? str.slice(0, len) + "..." : str;
+}
+
 window.edit = function(){
     location.href = "profile.html";
 };
 
-// 保留你之前的改密码代码（如果有的话）
 window.changePassword = function(){
     document.getElementById("pwdModal").style.display = "flex";
 };
@@ -120,7 +270,7 @@ window.submitChangePassword = async function(){
     const oldPwd = document.getElementById("oldPwd").value;
     const newPwd = document.getElementById("newPwd").value;
     const confirmPwd = document.getElementById("confirmPwd").value;
-    
+
     if(!oldPwd || !newPwd || !confirmPwd){
         alert("请填写所有密码");
         return;
@@ -133,27 +283,27 @@ window.submitChangePassword = async function(){
         alert("新密码至少6位");
         return;
     }
-    
+
     const { data: userData } = await supabase.auth.getUser();
     if(!userData.user){
         alert("请先登录");
         return;
     }
-    
+
     const { error: signInError } = await supabase.auth.signInWithPassword({
         email: userData.user.email,
         password: oldPwd
     });
-    
+
     if(signInError){
         alert("原密码错误");
         return;
     }
-    
+
     const { error: updateError } = await supabase.auth.updateUser({
         password: newPwd
     });
-    
+
     if(updateError){
         alert("修改失败: " + updateError.message);
     } else {
@@ -161,6 +311,11 @@ window.submitChangePassword = async function(){
         await supabase.auth.signOut();
         location.href = "index.html";
     }
+};
+
+window.doLogout = async function(){
+    await supabase.auth.signOut();
+    location.href = "index.html";
 };
 </script>
 </body>

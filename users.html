@@ -5,123 +5,335 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>名片广场</title>
 <link rel="stylesheet" href="style.css">
-
-<!-- ====== style 从这里开始 ====== -->
-<style>
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    min-height: 100vh;
-    background: #f1f1f1;
-    font-family: "Microsoft YaHei";
-    display: block;
-}
-
-.nav {
-    text-align: center;
-    padding: 20px;
-    background: white;
-    box-shadow: 0 2px 10px #ddd;
-}
-.nav a {
-    color: #1677ff;
-    text-decoration: none;
-    margin: 0 15px;
-    font-size: 16px;
-}
-
-h1 {
-    text-align: center;
-    margin: 30px 0 20px;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 20px;
-    padding: 0 20px 40px;
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-.user-card {
-    background: white;
-    border-radius: 20px;
-    padding: 25px;
-    text-align: center;
-    box-shadow: 0 4px 15px #ccc;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-.user-card:hover {
-    transform: translateY(-5px);
-}
-.user-card img {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 10px;
-}
-.user-card h3 {
-    margin: 10px 0 5px;
-    font-size: 18px;
-}
-.user-card p {
-    color: #666;
-    margin: 0;
-    font-size: 14px;
-}
-</style>
-<!-- ====== style 到这里结束 ====== -->
-
+<base target="_blank">
 </head>
-<body>
+<body class="users-body">
 
-<div class="nav">
+<nav class="nav">
     <a href="index.html">🏠 首页</a>
     <a href="users.html">📇 名片广场</a>
-</div>
+</nav>
 
-<h1>📇 名片广场</h1>
+<header class="page-header">
+    <h1>名片广场</h1>
+    <p>发现优秀的电子名片，点击卡片查看完整信息</p>
+</header>
 
 <div class="grid" id="userList">
-    <p style="text-align:center;width:100%;">加载中...</p>
+    <div class="loading-state">正在加载名片数据...</div>
 </div>
 
 <script type="module">
 import { supabase } from "./supabase.js";
 
-(async function(){
+const list = document.getElementById("userList");
+// 维护已渲染卡片的映射：id -> { el, refs }
+const cardMap = new Map();
+let isFirstLoad = true;
+
+// 获取有效头像 URL，空 / null / 纯空格 时不设置 src（显示空白占位）
+function getAvatarUrl(raw) {
+    if (raw && typeof raw === "string" && raw.trim().length > 0) {
+        return raw.trim();
+    }
+    return "";
+}
+
+// 截断文本
+function truncate(str, len) {
+    if (!str) return "";
+    str = String(str);
+    return str.length > len ? str.slice(0, len) + "..." : str;
+}
+
+// 创建一张新卡片 DOM，返回 { el, refs }
+function createCard(user) {
+    const card = document.createElement("div");
+    card.className = "user-card";
+    card.dataset.id = user.id;
+    card.onclick = () => { location.href = "card.html?id=" + encodeURIComponent(user.id); };
+
+    // ===== 头部：头像 + 基本信息 =====
+    const header = document.createElement("div");
+    header.className = "card-header";
+
+    const avatarWrap = document.createElement("div");
+    avatarWrap.className = "card-avatar-wrap";
+
+    const avatar = document.createElement("img");
+    avatar.className = "card-avatar";
+    avatar.alt = "头像";
+    const avatarUrl = getAvatarUrl(user.avatar);
+    if (avatarUrl) {
+        avatar.src = avatarUrl;
+        avatar.onerror = function() {
+            this.src = "";
+            this.style.background = "rgba(255,255,255,0.05)";
+        };
+    } else {
+        avatar.style.background = "rgba(255,255,255,0.05)";
+    }
+
+    const statusDot = document.createElement("div");
+    statusDot.className = "card-avatar-status";
+
+    avatarWrap.appendChild(avatar);
+    avatarWrap.appendChild(statusDot);
+
+    const info = document.createElement("div");
+    info.className = "card-info";
+
+    const nameEl = document.createElement("h3");
+    nameEl.className = "card-name";
+    nameEl.textContent = user.name || "未命名";
+
+    const jobEl = document.createElement("p");
+    jobEl.className = "card-job";
+    jobEl.textContent = user.job || "暂无职位";
+
+    const idEl = document.createElement("span");
+    idEl.className = "card-id";
+    idEl.textContent = "ID: " + truncate(user.id, 12);
+
+    info.appendChild(nameEl);
+    info.appendChild(jobEl);
+    info.appendChild(idEl);
+    header.appendChild(avatarWrap);
+    header.appendChild(info);
+
+    // ===== 联系方式分区 =====
+    const contacts = document.createElement("div");
+    contacts.className = "card-contacts";
+
+    const contactDefs = [
+        { key: "phone", icon: "📞", label: "电话" },
+        { key: "email", icon: "✉️", label: "邮箱" },
+        { key: "github", icon: "💻", label: "GitHub" },
+    ];
+
+    const contactRefs = {};
+    contactDefs.forEach(def => {
+        const item = document.createElement("div");
+        item.className = "contact-item";
+        const val = user[def.key];
+        if (!val) item.classList.add("empty");
+
+        const icon = document.createElement("span");
+        icon.className = "icon";
+        icon.textContent = def.icon;
+
+        const label = document.createElement("span");
+        label.className = "label";
+        label.textContent = def.label;
+
+        const value = document.createElement("span");
+        value.className = "value";
+        value.textContent = val ? truncate(val, 16) : "未填写";
+
+        item.appendChild(icon);
+        item.appendChild(label);
+        item.appendChild(value);
+        contacts.appendChild(item);
+        contactRefs[def.key] = { item, value };
+    });
+
+    // ===== 简介区 =====
+    const bio = document.createElement("div");
+    bio.className = "card-bio";
+
+    const bioLabel = document.createElement("div");
+    bioLabel.className = "card-bio-label";
+    bioLabel.textContent = "关于我";
+
+    const bioText = document.createElement("p");
+    bioText.className = "card-bio-text";
+    const intro = user.intro;
+    if (intro && String(intro).trim()) {
+        bioText.textContent = String(intro).trim();
+    } else {
+        bioText.classList.add("empty");
+        bioText.textContent = "这位用户还没有填写个人介绍...";
+    }
+
+    bio.appendChild(bioLabel);
+    bio.appendChild(bioText);
+
+    // ===== 底部 =====
+    const footer = document.createElement("div");
+    footer.className = "card-footer";
+
+    const footerText = document.createElement("span");
+    footerText.className = "card-footer-text";
+    footerText.textContent = "查看完整名片";
+
+    const footerArrow = document.createElement("span");
+    footerArrow.className = "card-footer-arrow";
+    footerArrow.textContent = "→";
+
+    footer.appendChild(footerText);
+    footer.appendChild(footerArrow);
+
+    // 组装
+    card.appendChild(header);
+    card.appendChild(contacts);
+    card.appendChild(bio);
+    card.appendChild(footer);
+
+    // 缓存引用，方便 diff 更新
+    const refs = {
+        avatar,
+        nameEl,
+        jobEl,
+        idEl,
+        contactRefs,
+        bioText,
+    };
+
+    return { el: card, refs };
+}
+
+// 更新已有卡片，只改动真正变化的数据
+function updateCard(entry, user) {
+    const { refs } = entry;
+
+    // 头像
+    const newAvatar = getAvatarUrl(user.avatar);
+    if (newAvatar) {
+        if (refs.avatar.src !== newAvatar) {
+            refs.avatar.src = newAvatar;
+            refs.avatar.style.background = "";
+        }
+    } else {
+        refs.avatar.src = "";
+        refs.avatar.style.background = "rgba(255,255,255,0.05)";
+    }
+
+    // 姓名
+    const newName = user.name || "未命名";
+    if (refs.nameEl.textContent !== newName) {
+        refs.nameEl.textContent = newName;
+    }
+
+    // 职位
+    const newJob = user.job || "暂无职位";
+    if (refs.jobEl.textContent !== newJob) {
+        refs.jobEl.textContent = newJob;
+    }
+
+    // ID
+    const newId = "ID: " + truncate(user.id, 12);
+    if (refs.idEl.textContent !== newId) {
+        refs.idEl.textContent = newId;
+    }
+
+    // 联系方式
+    const contactDefs = [
+        { key: "phone", icon: "📞", label: "电话" },
+        { key: "email", icon: "✉️", label: "邮箱" },
+        { key: "github", icon: "💻", label: "GitHub" },
+    ];
+    contactDefs.forEach(def => {
+        const ref = refs.contactRefs[def.key];
+        const val = user[def.key];
+        const displayVal = val ? truncate(val, 16) : "未填写";
+
+        if (ref.value.textContent !== displayVal) {
+            ref.value.textContent = displayVal;
+        }
+
+        if (val) {
+            ref.item.classList.remove("empty");
+        } else {
+            ref.item.classList.add("empty");
+        }
+    });
+
+    // 简介
+    const intro = user.intro;
+    if (intro && String(intro).trim()) {
+        const newIntro = String(intro).trim();
+        if (refs.bioText.textContent !== newIntro) {
+            refs.bioText.textContent = newIntro;
+            refs.bioText.classList.remove("empty");
+        }
+    } else {
+        const emptyText = "这位用户还没有填写个人介绍...";
+        if (refs.bioText.textContent !== emptyText) {
+            refs.bioText.textContent = emptyText;
+            refs.bioText.classList.add("empty");
+        }
+    }
+
+    // 更新点击事件
+    entry.el.onclick = () => { location.href = "card.html?id=" + encodeURIComponent(user.id); };
+}
+
+// 核心渲染：diff 更新，绝不整体 innerHTML 覆盖
+function render(data) {
+    if (!data) data = [];
+
+    const currentIds = new Set(data.map(u => u.id));
+
+    // 1. 删除后端已不存在的卡片
+    for (const [id, entry] of cardMap) {
+        if (!currentIds.has(id)) {
+            entry.el.remove();
+            cardMap.delete(id);
+        }
+    }
+
+    // 2. 按后端返回顺序，逐个更新 / 插入卡片
+    data.forEach((user, index) => {
+        const entry = cardMap.get(user.id);
+        const refNode = list.children[index] || null;
+
+        if (entry) {
+            updateCard(entry, user);
+            // 调整位置（如果顺序变了）
+            if (refNode !== entry.el) {
+                list.insertBefore(entry.el, refNode);
+            }
+        } else {
+            const newEntry = createCard(user);
+            cardMap.set(user.id, newEntry);
+            if (refNode) {
+                list.insertBefore(newEntry.el, refNode);
+            } else {
+                list.appendChild(newEntry.el);
+            }
+        }
+    });
+
+    // 3. 首次加载且空数据时显示提示
+    if (isFirstLoad && data.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📇</div><div class="empty-state-text">还没有人创建名片，快去创建第一张吧！</div></div>';
+    }
+
+    isFirstLoad = false;
+}
+
+// 拉取数据 — 查询全部字段
+async function fetchData() {
     const { data, error } = await supabase
         .from("profiles")
-        .select("id, name, job, avatar");
-    
-    const list = document.getElementById("userList");
-    
-    if(error){
-        list.innerHTML = "<p style='text-align:center;'>加载失败: " + error.message + "</p>";
+        .select("id, name, job, avatar, phone, email, github, intro");
+
+    if (error) {
         console.error(error);
+        if (isFirstLoad) {
+            list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">加载失败: ' + error.message + '</div></div>';
+        }
         return;
     }
-    
-    if(!data || data.length === 0){
-        list.innerHTML = "<p style='text-align:center;'>还没有人创建名片</p>";
-        return;
-    }
-    
-    list.innerHTML = data.map(user => `
-        <div class="user-card" onclick="location.href='card.html?id=${user.id}'">
-            <img src="${user.avatar || 'images/avatar.jpg'}" 
-                 onerror="this.src='images/avatar.jpg'" alt="头像">
-            <h3>${user.name || '未命名'}</h3>
-            <p>${user.job || ''}</p>
-        </div>
-    `).join('');
-})();
+
+    render(data);
+}
+
+// 首次加载
+fetchData();
+
+// 定时轮询，每 8 秒静默刷新一次
+setInterval(fetchData, 8000);
 </script>
 
 </body>
