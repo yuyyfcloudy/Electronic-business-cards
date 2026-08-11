@@ -123,3 +123,14 @@ window.saveProfile = async function(){
         location.href="card.html";
     }
 }
+
+window.updateFileName = function(input){
+    const nameSpan = document.getElementById("fileName");
+    if(input.files && input.files[0]){
+        nameSpan.textContent = input.files[0].name;
+        nameSpan.style.color = "#333";
+    } else {
+        nameSpan.textContent = "未选择文件";
+        nameSpan.style.color = "#888";
+    }
+}
