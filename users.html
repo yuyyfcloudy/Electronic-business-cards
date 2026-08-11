@@ -9,9 +9,14 @@
 </head>
 <body class="users-body">
 
-<nav class="nav">
-    <a href="index.html">🏠 首页</a>
-    <a href="users.html">📇 名片广场</a>
+<nav class="nav" style="justify-content:space-between;">
+    <div style="width:220px;"></div> <!-- 左边占位，让中间链接居中 -->
+    
+    <div style="display:flex;gap:40px;">
+        <a href="index.html">🏠 首页</a>
+        <a href="users.html">📇 名片广场</a>
+    </div>
+    
     <input type="text" id="searchInput" placeholder="🔍 搜索姓名或职位..." 
            style="padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.8);width:220px;outline:none;font-size:14px;">
 </nav>
