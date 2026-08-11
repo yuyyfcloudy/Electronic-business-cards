@@ -50,7 +50,6 @@ window.login = async function(){
         alert(error.message);
     }
     else{
-        alert("登录成功");
         const { data: profileData } = await supabase
             .from("profiles")
             .select("id")
