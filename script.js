@@ -123,6 +123,22 @@ window.saveProfile = async function(){
     }
 }
 
+
+window.clearProfile = function(){
+    if(!confirm("确定要清空所有信息吗？")){
+        return;
+    }
+    document.getElementById("name").value = "";
+    document.getElementById("job").value = "";
+    document.getElementById("intro").value = "";
+    document.getElementById("phone").value = "";
+    document.getElementById("email").value = "";
+    document.getElementById("github").value = "";
+    document.getElementById("avatar").value = "";
+    document.getElementById("fileName").textContent = "未选择文件";
+}
+
+
 window.updateFileName = function(input){
     const nameSpan = document.getElementById("fileName");
     if(input.files && input.files[0]){
