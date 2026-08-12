@@ -79,6 +79,7 @@ window.saveProfile = async function(){
 
     let avatarUrl = "";
     let honorImageUrl = "";
+    
     const honorFileInput = document.getElementById("honor_image");
     if(honorFileInput && honorFileInput.files && honorFileInput.files[0]){
         const file = honorFileInput.files[0];
@@ -92,16 +93,14 @@ window.saveProfile = async function(){
             reader.readAsDataURL(file);
         });
     }
+    
     const fileInput = document.getElementById("avatar");
-
     if(fileInput.files && fileInput.files[0]){
         const file = fileInput.files[0];
-
         if(file.size > 2 * 1024 * 1024){
             alert("图片太大，请选择 2MB 以内的图片");
             return;
         }
-
         avatarUrl = await new Promise((resolve) => {
             const reader = new FileReader();
             reader.onload = (e) => resolve(e.target.result);
@@ -117,11 +116,14 @@ window.saveProfile = async function(){
         phone: document.getElementById("phone").value,
         email: document.getElementById("email").value,
         github: document.getElementById("github").value,
-	honor_text: document.getElementById("honor_text").value,
+        honor_text: document.getElementById("honor_text").value,
     };
 
     if(avatarUrl){
         profile.avatar = avatarUrl;
+    }
+    if(honorImageUrl){
+        profile.honor_image = honorImageUrl;
     }
 
     const { error } = await supabase
@@ -136,12 +138,7 @@ window.saveProfile = async function(){
         alert("保存成功");
         location.href="card.html";
     }
-    
-        if(honorImageUrl){
-        profile.honor_image = honorImageUrl;
-    }
 }
-
 
 window.clearProfile = function(){
     if(!confirm("确定要清空所有信息吗？")){

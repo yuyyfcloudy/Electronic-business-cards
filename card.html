@@ -13,7 +13,7 @@
 <nav class="profile-nav">
   <a href="users.html" class="nav-back">← 名片广场</a>
   <span class="nav-title">电子名片</span>
-  <a href="index.html" class="nav-logout" id="logoutBtn" style="display:none;" onclick="doLogout()">退出登录</a>
+  <a href="#" class="nav-logout" id="logoutBtn" style="display:none;" onclick="doLogout(); return false;">退出登录</a>
 </nav>
 
 <div class="profile-wrap">
@@ -254,6 +254,7 @@ function getRandomQuote() {
             if(data.honor_image){
                 honorImg.src = data.honor_image;
                 honorImg.style.display = "block";
+                honorImg.onerror = function() { this.style.display = "none"; };
             } else {
                 honorImg.style.display = "none";
             }

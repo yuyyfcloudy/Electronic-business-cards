@@ -38,9 +38,6 @@
 
 </div>
 
-<script type="module" src="script.js"></script>
-
-<!-- 这个 script 只负责预填充数据，不操作按钮 -->
 <script type="module">
 import { supabase } from "./supabase.js";
 
@@ -61,7 +58,12 @@ import { supabase } from "./supabase.js";
         document.getElementById("phone").value = data.phone || "";
         document.getElementById("email").value = data.email || "";
         document.getElementById("github").value = data.github || "";
-	document.getElementById("honor_text").value = data.honor_text || "";
+        document.getElementById("honor_text").value = data.honor_text || "";
+        
+        if(data.honor_image){
+            document.getElementById("honorFileName").textContent = "已上传，重新选择可替换";
+            document.getElementById("honorFileName").style.color = "#667eea";
+        }
     }
 })();
 </script>
