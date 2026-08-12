@@ -1320,13 +1320,18 @@ input[type="file"]:hover {
     font-weight: 500;
     font-style: italic;
 }
+/* =====================
+   紧凑管理操作 — 卡片风格小按钮
+   ===================== */
 
 .action-body-compact {
-    padding: 16px 24px 20px !important;
+    padding: 20px 28px !important;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: center;
     align-items: center;
-    gap: 10px;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
 .action-mini-row {
@@ -1334,24 +1339,26 @@ input[type="file"]:hover {
     align-items: center;
     justify-content: center;
     gap: 12px;
-    width: 100%;
+    flex: 1;
+    min-width: 220px;
+    max-width: 300px;
 }
 
 .action-mini-label {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
     font-weight: 500;
-    min-width: 80px;
-    text-align: right;
+    white-space: nowrap;
 }
 
+/* 卡片风格按钮 — 固定宽度不铺满 */
 .action-mini-btn {
-    width: 140px;
+    width: 100px;
     padding: 10px 0;
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.04);
     background: rgba(255, 255, 255, 0.02);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -1360,6 +1367,7 @@ input[type="file"]:hover {
     text-align: center;
 }
 
+/* 主按钮 — 紫色调 */
 .action-mini-btn-primary {
     color: rgba(167, 139, 250, 0.9);
     border-color: rgba(124, 58, 237, 0.12);
@@ -1374,6 +1382,7 @@ input[type="file"]:hover {
     box-shadow: 0 4px 16px rgba(124, 58, 237, 0.12);
 }
 
+/* 次按钮 — 灰色调 */
 .action-mini-btn-secondary {
     color: rgba(255, 255, 255, 0.45);
     border-color: rgba(255, 255, 255, 0.04);
@@ -1386,7 +1395,6 @@ input[type="file"]:hover {
     color: rgba(255, 255, 255, 0.65);
     transform: translateY(-2px);
 }
-
 .file-upload {
     display: flex;
     align-items: center;
