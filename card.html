@@ -236,21 +236,21 @@ function getRandomQuote() {
             githubLink.href = "#";
         }
 
-	 // 个人荣誉
+        // 个人荣誉
         const honorBlock = document.getElementById("honorBlock");
         const honorTextEl = document.getElementById("honorText");
         const honorImg = document.getElementById("honorImg");
-        
+
         if(data.honor_text || data.honor_image){
             honorBlock.style.display = "block";
-            
+
             if(data.honor_text && data.honor_text.trim()){
                 honorTextEl.textContent = data.honor_text;
                 honorTextEl.style.display = "block";
             } else {
                 honorTextEl.style.display = "none";
             }
-            
+
             if(data.honor_image){
                 honorImg.src = data.honor_image;
                 honorImg.style.display = "block";

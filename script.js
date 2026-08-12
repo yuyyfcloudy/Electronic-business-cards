@@ -79,7 +79,7 @@ window.saveProfile = async function(){
 
     let avatarUrl = "";
     let honorImageUrl = "";
-    
+
     const honorFileInput = document.getElementById("honor_image");
     if(honorFileInput && honorFileInput.files && honorFileInput.files[0]){
         const file = honorFileInput.files[0];
@@ -93,7 +93,7 @@ window.saveProfile = async function(){
             reader.readAsDataURL(file);
         });
     }
-    
+
     const fileInput = document.getElementById("avatar");
     if(fileInput.files && fileInput.files[0]){
         const file = fileInput.files[0];
@@ -140,6 +140,7 @@ window.saveProfile = async function(){
     }
 }
 
+
 window.clearProfile = function(){
     if(!confirm("确定要清空所有信息吗？")){
         return;
@@ -153,6 +154,7 @@ window.clearProfile = function(){
     document.getElementById("honor_text").value = "";
     document.getElementById("honor_image").value = "";
     document.getElementById("honorFileName").textContent = "未选择文件";
+    document.getElementById("honorFileName").style.color = "#888";
     document.getElementById("avatar").value = "";
     document.getElementById("fileName").textContent = "未选择文件";
 }
