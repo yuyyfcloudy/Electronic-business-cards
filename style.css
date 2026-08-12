@@ -1,376 +1,1469 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>我的电子名片</title>
-<link rel="stylesheet" href="style.css">
-
-</head>
-<body class="profile-body">
-
-<nav class="profile-nav">
-  <a href="users.html" class="nav-back">← 名片广场</a>
-  <span class="nav-title">电子名片</span>
-  <a href="#" class="nav-logout" id="logoutBtn" style="display:none;" onclick="doLogout(); return false;">退出登录</a>
-</nav>
-
-<div class="profile-wrap">
-  <aside class="profile-sidebar">
-    <div class="sidebar-card">
-      <div class="sidebar-avatar-wrap">
-        <img id="avatar" class="sidebar-avatar" src="" alt="头像">
-        <div class="sidebar-status"></div>
-      </div>
-      <h1 id="name" class="sidebar-name">加载中...</h1>
-      <p id="job" class="sidebar-job"></p>
-      <div class="sidebar-divider"></div>
-      <div class="sidebar-meta">
-        <div class="meta-row">
-          <span class="meta-label">用户 ID</span>
-          <span class="meta-value" id="userId">—</span>
-        </div>
-        <div class="meta-row">
-          <span class="meta-label">注册时间</span>
-          <span class="meta-value" id="joinDate">—</span>
-        </div>
-      </div>
-    </div>
-  </aside>
-
-  <main class="profile-main">
-    <div class="welcome-bar" id="welcomeBar" style="display:none;">
-      <span class="welcome-icon">👋</span>
-      <span class="welcome-text" id="welcomeText">欢迎回来！</span>
-    </div>
-
-    <section class="info-block block-quote">
-      <div class="block-header">
-        <span class="block-icon">💬</span>
-        <span class="block-title">个人简介</span>
-      </div>
-      <div class="block-body">
-        <p id="intro" class="quote-text">这位用户还没有填写个人介绍...</p>
-      </div>
-    </section>
-
-    <section class="info-block block-quote" id="honorBlock" style="display:none;">
-      <div class="block-header">
-        <span class="block-icon">🏆</span>
-        <span class="block-title">个人荣誉</span>
-      </div>
-      <div class="block-body">
-        <p id="honorText" class="quote-text" style="display:none;"></p>
-        <div id="honorImgContainer"></div>
-      </div>
-    </section>
-
-    <section class="info-block block-contact">
-      <div class="block-header">
-        <span class="block-icon">📡</span>
-        <span class="block-title">联系方式</span>
-      </div>
-      <div class="block-body">
-        <div class="contact-grid">
-          <a id="phoneLink" class="contact-box" href="#">
-            <div class="contact-box-icon">📞</div>
-            <div class="contact-box-label">电话</div>
-            <div class="contact-box-value" id="phoneVal">未填写</div>
-          </a>
-          <a id="emailLink" class="contact-box" href="#">
-            <div class="contact-box-icon">✉️</div>
-            <div class="contact-box-label">邮箱</div>
-            <div class="contact-box-value" id="emailVal">未填写</div>
-          </a>
-          <a id="githubLink" class="contact-box" href="#">
-            <div class="contact-box-icon">💻</div>
-            <div class="contact-box-label">GitHub</div>
-            <div class="contact-box-value" id="githubVal">未填写</div>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <section class="info-block block-action" id="actionBlock" style="display:none;">
-      <div class="block-header">
-        <span class="block-icon">⚙️</span>
-        <span class="block-title">管理操作</span>
-      </div>
-      <div class="block-body action-body-compact">
-        <div class="action-mini-row">
-          <span class="action-mini-label">✏️ 编辑资料</span>
-          <button onclick="edit()" class="action-mini-btn action-mini-btn-primary">编辑</button>
-        </div>
-        <div class="action-mini-row">
-          <span class="action-mini-label">🔒 修改密码</span>
-          <button onclick="changePassword()" class="action-mini-btn action-mini-btn-secondary">修改</button>
-        </div>
-      </div>
-    </section>
-  </main>
-</div>
-
-<div id="pwdModal" class="modal-overlay">
-  <div class="modal-content">
-    <h3>🔐 修改密码</h3>
-    <input type="password" id="oldPwd" placeholder="请输入原密码">
-    <input type="password" id="newPwd" placeholder="请输入新密码">
-    <input type="password" id="confirmPwd" placeholder="确认新密码">
-    <div class="modal-buttons">
-      <button onclick="submitChangePassword()">确认修改</button>
-      <button class="secondary" onclick="closePwdModal()">取消</button>
-    </div>
-  </div>
-</div>
-
-<script type="module">
-import { supabase } from "./supabase.js";
-
-let isOwner = false;
-
-const welcomeQuotes = [
-  "欢迎回来，今天也是闪闪发光的一天 ✨",
-  "嘿，你的名片正在帮你社交呢 👋",
-  "好久不见，这次想更新点什么？ 🤔",
-  "你的数字身份已就位，随时可以出发 🚀",
-  "欢迎回家，这里的一切都是你的 🏠",
-  "又见面了，今天有什么新故事？ 📖",
-  "登录成功，你的名片比你还积极 😄",
-  "欢迎回来，世界在等你的名片 🌍",
-  "今日已登录，请查收你的数字名片 📇",
-  "嘿，别来无恙，名片广场又热闹了 🎉"
-];
-
-function getRandomQuote() {
-  return welcomeQuotes[Math.floor(Math.random() * welcomeQuotes.length)];
+* {
+    box-sizing: border-box;
 }
 
-function truncate(str, len){
-    if(!str) return "";
-    return str.length > len ? str.slice(0, len) + "..." : str;
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    background-attachment: fixed;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    padding: 20px;
 }
 
-function renderHonorImages(honorData) {
-    const container = document.getElementById("honorImgContainer");
-    container.innerHTML = "";
-    
-    let images = [];
-    if(!honorData) return;
-    
-    try {
-        const parsed = JSON.parse(honorData);
-        if(Array.isArray(parsed)){
-            images = parsed;
-        } else {
-            images = [honorData];
-        }
-    } catch(e) {
-        images = [honorData];
-    }
-    
-    if(images.length === 0) return;
-    
-    const grid = document.createElement("div");
-    grid.className = "honor-grid";
-    
-    images.forEach((src, idx) => {
-        const img = document.createElement("img");
-        img.className = "honor-img";
-        img.src = src;
-        img.alt = "荣誉图片 " + (idx + 1);
-        img.onerror = function() { this.style.display = "none"; };
-        grid.appendChild(img);
-    });
-    
-    container.appendChild(grid);
+.box, .card {
+    width: 400px;
+    max-width: 100%;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 40px 35px;
+    border-radius: 24px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    animation: fadeInUp 0.6s ease-out;
 }
 
-(async function() {
-    try {
-        const urlParams = new URLSearchParams(window.location.search);
-        let targetId = urlParams.get('id');
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-        if(!targetId){
-            const { data: userData } = await supabase.auth.getUser();
-            if(!userData.user){
-                alert("请先登录");
-                location.href = "index.html";
-                return;
-            }
-            targetId = userData.user.id;
-        }
+.box h1, .card h1 {
+    margin: 0 0 8px 0;
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
 
-        const { data, error } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", targetId)
-            .maybeSingle();
+.box h1 + p, .card h3 {
+    color: #666;
+    font-size: 15px;
+    margin: 0 0 25px 0;
+}
 
-        if(error || !data){
-            alert("名片不存在");
-            location.href = "users.html";
-            return;
-        }
+input, textarea {
+    width: 100%;
+    padding: 14px 18px;
+    margin: 8px 0;
+    border-radius: 14px;
+    border: 2px solid rgba(102, 126, 234, 0.15);
+    background: rgba(255, 255, 255, 0.7);
+    font-size: 15px;
+    transition: all 0.3s ease;
+    outline: none;
+    font-family: inherit;
+}
 
-        if(data.avatar){
-            document.getElementById("avatar").src = data.avatar;
-        }
-        document.getElementById("name").textContent = data.name || "未命名";
-        document.getElementById("job").textContent = data.job || "暂无职位";
-        document.getElementById("userId").textContent = (data.id || "").slice(0, 12) + "...";
+input:focus, textarea:focus {
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
 
-        const introEl = document.getElementById("intro");
-        if(data.intro && data.intro.trim()){
-            introEl.textContent = data.intro;
-            introEl.classList.remove("empty");
-        } else {
-            introEl.textContent = "这位用户还没有填写个人介绍...";
-            introEl.classList.add("empty");
-        }
+input::placeholder, textarea::placeholder {
+    color: #aaa;
+}
 
-        const phoneVal = document.getElementById("phoneVal");
-        const phoneLink = document.getElementById("phoneLink");
-        if(data.phone){
-            phoneVal.textContent = data.phone;
-            phoneLink.href = "tel:" + data.phone;
-            phoneLink.classList.remove("disabled");
-        } else {
-            phoneVal.textContent = "未填写";
-            phoneLink.classList.add("disabled");
-            phoneLink.href = "#";
-        }
+textarea {
+    height: 100px;
+    resize: vertical;
+}
 
-        const emailVal = document.getElementById("emailVal");
-        const emailLink = document.getElementById("emailLink");
-        if(data.email){
-            emailVal.textContent = data.email;
-            emailLink.href = "mailto:" + data.email;
-            emailLink.classList.remove("disabled");
-        } else {
-            emailVal.textContent = "未填写";
-            emailLink.classList.add("disabled");
-            emailLink.href = "#";
-        }
+button {
+    width: 100%;
+    padding: 14px 25px;
+    margin-top: 15px;
+    border: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    letter-spacing: 1px;
+}
 
-        const githubVal = document.getElementById("githubVal");
-        const githubLink = document.getElementById("githubLink");
-        if(data.github){
-            githubVal.textContent = truncate(data.github, 24);
-            githubLink.href = data.github;
-            githubLink.target = "_blank";
-            githubLink.classList.remove("disabled");
-        } else {
-            githubVal.textContent = "未填写";
-            githubLink.classList.add("disabled");
-            githubLink.href = "#";
-        }
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
 
-        const honorBlock = document.getElementById("honorBlock");
-        const honorTextEl = document.getElementById("honorText");
-        
-        if(data.honor_text || data.honor_image){
-            honorBlock.style.display = "block";
-            
-            if(data.honor_text && data.honor_text.trim()){
-                honorTextEl.textContent = data.honor_text;
-                honorTextEl.style.display = "block";
-            } else {
-                honorTextEl.style.display = "none";
-            }
-            
-            renderHonorImages(data.honor_image);
-        }
+button:active {
+    transform: translateY(0);
+}
 
-        const { data: currentUser } = await supabase.auth.getUser();
-        isOwner = currentUser.user && currentUser.user.id === targetId;
+p {
+    margin: 18px 0 0 0;
+    font-size: 14px;
+    color: #666;
+}
 
-        const fromSquare = urlParams.has('id');
+p a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s;
+}
 
-        if(isOwner && !fromSquare){
-            document.getElementById("actionBlock").style.display = "block";
-            document.getElementById("logoutBtn").style.display = "inline-flex";
-            document.getElementById("welcomeBar").style.display = "flex";
-            document.getElementById("welcomeText").textContent = getRandomQuote();
+p a:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
 
-            if(currentUser.user && currentUser.user.created_at){
-                const d = new Date(currentUser.user.created_at);
-                document.getElementById("joinDate").textContent = 
-                    d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
-            }
-        } else if (isOwner && fromSquare) {
-            document.getElementById("logoutBtn").style.display = "inline-flex";
-        }
+.avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    margin-bottom: 15px;
+    transition: transform 0.3s ease;
+}
 
-    } catch(err) {
-        console.error(err);
-        alert("加载出错");
+.avatar:hover {
+    transform: scale(1.05);
+}
+
+.buttons {
+    margin: 20px 0;
+}
+
+.buttons a {
+    display: block;
+    margin: 10px 0;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 14px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+}
+
+.buttons a:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+input[type="file"] {
+    padding: 10px;
+    border: 2px dashed rgba(102, 126, 234, 0.3);
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+}
+
+input[type="file"]:hover {
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 35px;
+    border-radius: 24px;
+    width: 360px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: scaleIn 0.3s ease;
+}
+
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 22px;
+}
+
+.modal-content input {
+    margin: 8px 0;
+}
+
+.modal-buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.modal-buttons button {
+    width: auto;
+    padding: 10px 24px;
+    margin-top: 0;
+    font-size: 14px;
+}
+
+.modal-buttons button.secondary {
+    background: #ccc;
+    color: #333;
+    box-shadow: none;
+}
+
+.modal-buttons button.secondary:hover {
+    background: #bbb;
+}
+
+@media (max-width: 480px) {
+    .box, .card {
+        width: 100%;
+        padding: 30px 20px;
     }
-})();
+}
 
-window.edit = function(){
-    location.href = "profile.html";
-};
+.users-body {
+    display: block;
+    padding: 0;
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+}
 
-window.changePassword = function(){
-    document.getElementById("pwdModal").style.display = "flex";
-};
-window.closePwdModal = function(){
-    document.getElementById("pwdModal").style.display = "none";
-    document.getElementById("oldPwd").value = "";
-    document.getElementById("newPwd").value = "";
-    document.getElementById("confirmPwd").value = "";
-};
-window.submitChangePassword = async function(){
-    const oldPwd = document.getElementById("oldPwd").value;
-    const newPwd = document.getElementById("newPwd").value;
-    const confirmPwd = document.getElementById("confirmPwd").value;
+.nav {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    padding: 18px 40px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
 
-    if(!oldPwd || !newPwd || !confirmPwd){
-        alert("请填写所有密码");
-        return;
+.nav a {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    padding: 8px 16px;
+    border-radius: 12px;
+}
+
+.nav a:hover {
+    color: #a78bfa;
+    background: rgba(167, 139, 250, 0.08);
+}
+
+.page-header {
+    text-align: center;
+    padding: 50px 20px 30px;
+}
+
+.page-header h1 {
+    margin: 0 0 10px;
+    font-size: 42px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #c4b5fd, #a78bfa, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+}
+
+.page-header p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 28px;
+    padding: 0 40px 60px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+@media (max-width: 520px) {
+    .grid {
+        grid-template-columns: 1fr;
+        padding: 0 16px 40px;
+        gap: 20px;
     }
-    if(newPwd !== confirmPwd){
-        alert("两次输入的新密码不一致");
-        return;
+    .page-header h1 {
+        font-size: 30px;
     }
-    if(newPwd.length < 6){
-        alert("新密码至少6位");
-        return;
+}
+
+.user-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 24px;
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    animation: cardReveal 0.6s ease-out backwards;
+}
+
+@keyframes cardReveal {
+    from { opacity: 0; transform: translateY(30px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.user-card:nth-child(1) { animation-delay: 0.05s; }
+.user-card:nth-child(2) { animation-delay: 0.1s; }
+.user-card:nth-child(3) { animation-delay: 0.15s; }
+.user-card:nth-child(4) { animation-delay: 0.2s; }
+.user-card:nth-child(5) { animation-delay: 0.25s; }
+.user-card:nth-child(6) { animation-delay: 0.3s; }
+.user-card:nth-child(7) { animation-delay: 0.35s; }
+.user-card:nth-child(8) { animation-delay: 0.4s; }
+
+.user-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.3), transparent);
+}
+
+.user-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    border-color: rgba(167, 139, 250, 0.2);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(139, 92, 246, 0.08);
+}
+
+.card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 28px 28px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.card-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.card-avatar {
+    width: 88px;
+    height: 88px;
+    border-radius: 20px;
+    object-fit: cover;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.4s ease;
+}
+
+.user-card:hover .card-avatar {
+    border-color: rgba(167, 139, 250, 0.3);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
+}
+
+.card-avatar-status {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 18px;
+    height: 18px;
+    background: #22c55e;
+    border: 3px solid #1a1635;
+    border-radius: 50%;
+}
+
+.card-info {
+    flex: 1;
+    min-width: 0;
+    padding-top: 4px;
+}
+
+.card-name {
+    margin: 0 0 6px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #f1f5f9;
+    letter-spacing: -0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-job {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #a78bfa;
+    letter-spacing: 0.3px;
+}
+
+.card-id {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.25);
+    font-family: "SF Mono", "Fira Code", monospace;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.card-contacts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.contact-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 16px 8px;
+    background: rgba(255, 255, 255, 0.01);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.contact-item:hover {
+    background: rgba(167, 139, 250, 0.05);
+}
+
+.contact-item .icon {
+    font-size: 20px;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.contact-item:hover .icon {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.contact-item .label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.3);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.contact-item .value {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0 4px;
+}
+
+.contact-item.empty .value {
+    color: rgba(255, 255, 255, 0.15);
+    font-style: italic;
+}
+
+.contact-item:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 20%;
+    bottom: 20%;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.card-bio {
+    padding: 20px 28px 24px;
+}
+
+.card-bio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.card-bio-label::before {
+    content: "";
+    display: inline-block;
+    width: 12px;
+    height: 2px;
+    background: linear-gradient(90deg, #8b5cf6, transparent);
+    border-radius: 1px;
+}
+
+.card-bio-text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.5);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-bio-text.empty {
+    color: rgba(255, 255, 255, 0.15);
+    font-style: italic;
+}
+
+.card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: rgba(255, 255, 255, 0.015);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.card-footer-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(167, 139, 250, 0.6);
+    transition: color 0.3s ease;
+}
+
+.user-card:hover .card-footer-text {
+    color: #a78bfa;
+}
+
+.card-footer-arrow {
+    font-size: 18px;
+    color: rgba(167, 139, 250, 0.4);
+    transition: all 0.3s ease;
+}
+
+.user-card:hover .card-footer-arrow {
+    color: #a78bfa;
+    transform: translateX(4px);
+}
+
+.loading-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 16px;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.3;
+}
+
+.empty-state-text {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 16px;
+}
+
+.login-body {
+    display: block;
+    padding: 0;
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0c0e1b 0%, #1a1d3a 50%, #0f1126 100%);
+    background-attachment: fixed;
+    overflow-x: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.login-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.login-dot {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(139, 92, 246, 0.15);
+    animation: floatDot linear infinite;
+}
+
+@keyframes floatDot {
+    0% { transform: translateY(0) scale(1); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
+}
+
+.login-wrap {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    gap: 80px;
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+    .login-wrap {
+        flex-direction: column;
+        gap: 40px;
+        padding: 30px 20px;
     }
+}
 
-    const { data: userData } = await supabase.auth.getUser();
-    if(!userData.user){
-        alert("请先登录");
-        return;
+.login-welcome {
+    flex: 1;
+    max-width: 480px;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.login-brand {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(139, 92, 246, 0.7);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.login-title {
+    font-size: 52px;
+    font-weight: 800;
+    color: #f1f5f9;
+    line-height: 1.15;
+    margin: 0 0 30px;
+    letter-spacing: -1.5px;
+}
+
+@media (max-width: 600px) {
+    .login-title {
+        font-size: 36px;
     }
+}
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: userData.user.email,
-        password: oldPwd
-    });
+.login-quote {
+    background: rgba(139, 92, 246, 0.06);
+    border-left: 3px solid rgba(139, 92, 246, 0.3);
+    padding: 18px 24px;
+    border-radius: 0 12px 12px 0;
+    margin-bottom: 40px;
+    transition: all 0.4s ease;
+}
 
-    if(signInError){
-        alert("原密码错误");
-        return;
+.login-quote:hover {
+    background: rgba(139, 92, 246, 0.1);
+    border-left-color: rgba(139, 92, 246, 0.5);
+}
+
+.quote-mark {
+    color: rgba(139, 92, 246, 0.4);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+#quoteText {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 16px;
+    line-height: 1.6;
+    font-style: italic;
+    transition: opacity 0.4s ease;
+}
+
+.login-features {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+    color: rgba(255, 255, 255, 0.7);
+    transform: translateX(4px);
+}
+
+.feature-icon {
+    font-size: 18px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(139, 92, 246, 0.08);
+    border-radius: 10px;
+    border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.login-panel {
+    flex-shrink: 0;
+    width: 400px;
+    max-width: 100%;
+    animation: fadeInUp 0.8s ease-out 0.15s backwards;
+}
+
+.login-box {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 24px;
+    padding: 40px 36px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+}
+
+.login-box h2 {
+    margin: 0 0 6px;
+    font-size: 26px;
+    font-weight: 700;
+    color: #f1f5f9;
+}
+
+.login-sub {
+    margin: 0 0 30px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.login-field {
+    margin-bottom: 18px;
+}
+
+.login-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.login-field input {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    color: #f1f5f9;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    outline: none;
+    font-family: inherit;
+    margin: 0;
+}
+
+.login-field input::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.login-field input:focus {
+    border-color: rgba(139, 92, 246, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.08);
+}
+
+.login-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+    border: none;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    color: white;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.25);
+    letter-spacing: 0.5px;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(124, 58, 237, 0.35);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+.login-links {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 13px;
+}
+
+.login-links span {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.login-links a {
+    color: rgba(167, 139, 250, 0.7);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.login-links a:hover {
+    color: #a78bfa;
+}
+
+.profile-body {
+    display: block;
+    padding: 0;
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0c0e1b 0%, #12142b 40%, #0d0f20 100%);
+    background-attachment: fixed;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.profile-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 40px;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-back {
+    color: rgba(255, 255, 255, 0.45);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.3s;
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.nav-back:hover {
+    color: #a78bfa;
+    background: rgba(167, 139, 250, 0.06);
+    border-color: rgba(167, 139, 250, 0.1);
+}
+
+.nav-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 1px;
+}
+
+.nav-logout {
+    color: rgba(239, 68, 68, 0.6);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 10px;
+    background: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.08);
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.nav-logout:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.15);
+}
+
+@media (max-width: 600px) {
+    .profile-nav {
+        padding: 14px 20px;
     }
-
-    const { error: updateError } = await supabase.auth.updateUser({
-        password: newPwd
-    });
-
-    if(updateError){
-        alert("修改失败: " + updateError.message);
-    } else {
-        alert("密码修改成功，请重新登录");
-        await supabase.auth.signOut();
-        location.href = "index.html";
+    .nav-title {
+        display: none;
     }
-};
+}
 
-window.doLogout = async function(){
-    await supabase.auth.signOut();
-    location.href = "index.html";
-};
-</script>
-</body>
-</html>
+.profile-wrap {
+    display: flex;
+    gap: 28px;
+    padding: 32px 40px 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+    .profile-wrap {
+        flex-direction: column;
+        padding: 24px 20px 40px;
+    }
+}
+
+.profile-sidebar {
+    flex-shrink: 0;
+    width: 300px;
+}
+
+@media (max-width: 900px) {
+    .profile-sidebar {
+        width: 100%;
+    }
+}
+
+.sidebar-card {
+    background: rgba(255, 255, 255, 0.025);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding: 32px;
+    text-align: center;
+    position: sticky;
+    top: 90px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-avatar-wrap {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+.sidebar-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 24px;
+    object-fit: cover;
+    background: rgba(255, 255, 255, 0.04);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-status {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    background: #22c55e;
+    border: 4px solid #12142b;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+}
+
+.sidebar-name {
+    margin: 0 0 8px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #f1f5f9;
+    letter-spacing: -0.3px;
+}
+
+.sidebar-job {
+    margin: 0 0 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #a78bfa;
+}
+
+.sidebar-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+    margin: 0 0 20px;
+}
+
+.sidebar-meta {
+    text-align: left;
+}
+
+.meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.meta-row:last-child {
+    border-bottom: none;
+}
+
+.meta-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+    font-weight: 500;
+}
+
+.meta-value {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: "SF Mono", "Fira Code", monospace;
+}
+
+.profile-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+}
+
+.info-block {
+    background: rgba(255, 255, 255, 0.025);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    transition: all 0.4s ease;
+}
+
+.info-block:hover {
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+}
+
+.block-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 28px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.block-icon {
+    font-size: 18px;
+}
+
+.block-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.block-body {
+    padding: 24px 28px;
+}
+
+.block-quote {
+    border: 1px solid rgba(139, 92, 246, 0.08);
+    position: relative;
+}
+
+.block-quote::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(139, 92, 246, 0.4), rgba(139, 92, 246, 0.1));
+}
+
+.quote-text {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.6);
+    padding-left: 16px;
+}
+
+.quote-text.empty {
+    color: rgba(255, 255, 255, 0.2);
+    font-style: italic;
+}
+
+.block-contact {
+    border: 1px solid rgba(45, 212, 191, 0.06);
+}
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+@media (max-width: 600px) {
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.contact-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 24px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 16px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.contact-box:hover {
+    background: rgba(45, 212, 191, 0.04);
+    border-color: rgba(45, 212, 191, 0.12);
+    transform: translateY(-3px);
+}
+
+.contact-box.disabled {
+    opacity: 0.4;
+    cursor: default;
+    pointer-events: none;
+}
+
+.contact-box.disabled:hover {
+    transform: none;
+    border-color: rgba(255, 255, 255, 0.04);
+}
+
+.contact-box-icon {
+    font-size: 28px;
+    margin-bottom: 4px;
+}
+
+.contact-box-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.35);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.contact-box-value {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.55);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.block-action {
+    border: 1px solid rgba(245, 158, 11, 0.06);
+}
+
+.action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 16px 0;
+}
+
+.action-row:first-child {
+    padding-top: 0;
+}
+
+.action-row:last-child {
+    padding-bottom: 0;
+}
+
+.action-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.action-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 4px;
+}
+
+.action-desc {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.action-btn {
+    padding: 10px 22px;
+    border-radius: 10px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.action-btn-primary {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: white;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+}
+
+.action-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.3);
+}
+
+.action-btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.action-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.8);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.action-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.04);
+    margin: 0;
+}
+
+.welcome-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(124, 58, 237, 0.04));
+    border: 1px solid rgba(139, 92, 246, 0.1);
+    border-radius: 14px;
+    margin-bottom: 4px;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.welcome-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.welcome-text {
+    font-size: 14px;
+    color: rgba(167, 139, 250, 0.8);
+    font-weight: 500;
+    font-style: italic;
+}
+
+.action-body-compact {
+    padding: 16px 24px 20px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.action-mini-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.action-mini-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 500;
+    min-width: 80px;
+    text-align: right;
+}
+
+.action-mini-btn {
+    width: 140px;
+    padding: 10px 0;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.02);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+.action-mini-btn-primary {
+    color: rgba(167, 139, 250, 0.9);
+    border-color: rgba(124, 58, 237, 0.12);
+    background: rgba(124, 58, 237, 0.06);
+}
+
+.action-mini-btn-primary:hover {
+    background: rgba(124, 58, 237, 0.12);
+    border-color: rgba(124, 58, 237, 0.25);
+    color: #c4b5fd;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.12);
+}
+
+.action-mini-btn-secondary {
+    color: rgba(255, 255, 255, 0.45);
+    border-color: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.action-mini-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.65);
+    transform: translateY(-2px);
+}
+
+.file-upload {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 2px dashed rgba(102, 126, 234, 0.3);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 8px 0;
+}
+
+.file-upload:hover {
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.file-upload input[type="file"] {
+    display: none;
+}
+
+.file-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.file-name {
+    font-size: 14px;
+    color: #888;
+}
+
+.honor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    padding-left: 16px;
+}
+
+.honor-img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.honor-img:hover {
+    transform: scale(1.04);
+    border-color: rgba(167, 139, 250, 0.3);
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.15);
+}
+
+@media (max-width: 600px) {
+    .honor-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding-left: 16px;
+    }
+    .honor-img {
+        height: 120px;
+    }
+}
+
+@media (max-width: 400px) {
+    .honor-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .honor-img {
+        height: 100px;
+    }
+}
