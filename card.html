@@ -9,7 +9,6 @@
 </head>
 <body class="profile-body">
 
-<!-- 顶部导航 -->
 <nav class="profile-nav">
   <a href="users.html" class="nav-back">← 名片广场</a>
   <span class="nav-title">电子名片</span>
@@ -17,7 +16,6 @@
 </nav>
 
 <div class="profile-wrap">
-  <!-- 左侧边栏 -->
   <aside class="profile-sidebar">
     <div class="sidebar-card">
       <div class="sidebar-avatar-wrap">
@@ -40,15 +38,12 @@
     </div>
   </aside>
 
-  <!-- 主内容区 -->
   <main class="profile-main">
-    <!-- 欢迎横幅 — 仅主人可见 -->
     <div class="welcome-bar" id="welcomeBar" style="display:none;">
       <span class="welcome-icon">👋</span>
       <span class="welcome-text" id="welcomeText">欢迎回来！</span>
     </div>
 
-    <!-- 简介区块 — 引文风格 -->
     <section class="info-block block-quote">
       <div class="block-header">
         <span class="block-icon">💬</span>
@@ -59,7 +54,6 @@
       </div>
     </section>
 
-    <!-- 个人荣誉区块 -->
     <section class="info-block block-quote" id="honorBlock" style="display:none;">
       <div class="block-header">
         <span class="block-icon">🏆</span>
@@ -67,11 +61,10 @@
       </div>
       <div class="block-body">
         <p id="honorText" class="quote-text" style="display:none;"></p>
-        <img id="honorImg" style="display:none;max-width:100%;border-radius:12px;margin-top:16px;box-shadow:0 4px 15px rgba(0,0,0,0.3);" alt="荣誉图片">
+        <div id="honorImgContainer"></div>
       </div>
     </section>
 
-    <!-- 联系方式区块 — 卡片网格 -->
     <section class="info-block block-contact">
       <div class="block-header">
         <span class="block-icon">📡</span>
@@ -98,7 +91,6 @@
       </div>
     </section>
 
-    <!-- 管理操作区块 — 紧凑小卡片 -->
     <section class="info-block block-action" id="actionBlock" style="display:none;">
       <div class="block-header">
         <span class="block-icon">⚙️</span>
@@ -118,7 +110,6 @@
   </main>
 </div>
 
-<!-- 修改密码弹窗 -->
 <div id="pwdModal" class="modal-overlay">
   <div class="modal-content">
     <h3>🔐 修改密码</h3>
@@ -154,6 +145,46 @@ function getRandomQuote() {
   return welcomeQuotes[Math.floor(Math.random() * welcomeQuotes.length)];
 }
 
+function truncate(str, len){
+    if(!str) return "";
+    return str.length > len ? str.slice(0, len) + "..." : str;
+}
+
+function renderHonorImages(honorData) {
+    const container = document.getElementById("honorImgContainer");
+    container.innerHTML = "";
+    
+    let images = [];
+    if(!honorData) return;
+    
+    try {
+        const parsed = JSON.parse(honorData);
+        if(Array.isArray(parsed)){
+            images = parsed;
+        } else {
+            images = [honorData];
+        }
+    } catch(e) {
+        images = [honorData];
+    }
+    
+    if(images.length === 0) return;
+    
+    const grid = document.createElement("div");
+    grid.className = "honor-grid";
+    
+    images.forEach((src, idx) => {
+        const img = document.createElement("img");
+        img.className = "honor-img";
+        img.src = src;
+        img.alt = "荣誉图片 " + (idx + 1);
+        img.onerror = function() { this.style.display = "none"; };
+        grid.appendChild(img);
+    });
+    
+    container.appendChild(grid);
+}
+
 (async function() {
     try {
         const urlParams = new URLSearchParams(window.location.search);
@@ -181,7 +212,6 @@ function getRandomQuote() {
             return;
         }
 
-        // 填充数据
         if(data.avatar){
             document.getElementById("avatar").src = data.avatar;
         }
@@ -198,7 +228,6 @@ function getRandomQuote() {
             introEl.classList.add("empty");
         }
 
-        // 联系方式
         const phoneVal = document.getElementById("phoneVal");
         const phoneLink = document.getElementById("phoneLink");
         if(data.phone){
@@ -236,38 +265,28 @@ function getRandomQuote() {
             githubLink.href = "#";
         }
 
-        // 个人荣誉
         const honorBlock = document.getElementById("honorBlock");
         const honorTextEl = document.getElementById("honorText");
-        const honorImg = document.getElementById("honorImg");
-
+        
         if(data.honor_text || data.honor_image){
             honorBlock.style.display = "block";
-
+            
             if(data.honor_text && data.honor_text.trim()){
                 honorTextEl.textContent = data.honor_text;
                 honorTextEl.style.display = "block";
             } else {
                 honorTextEl.style.display = "none";
             }
-
-            if(data.honor_image){
-                honorImg.src = data.honor_image;
-                honorImg.style.display = "block";
-                honorImg.onerror = function() { this.style.display = "none"; };
-            } else {
-                honorImg.style.display = "none";
-            }
+            
+            renderHonorImages(data.honor_image);
         }
 
-        // 判断是否是主人
         const { data: currentUser } = await supabase.auth.getUser();
         isOwner = currentUser.user && currentUser.user.id === targetId;
 
         const fromSquare = urlParams.has('id');
 
         if(isOwner && !fromSquare){
-            // 直接访问 card.html（无id参数）才显示编辑按钮
             document.getElementById("actionBlock").style.display = "block";
             document.getElementById("logoutBtn").style.display = "inline-flex";
             document.getElementById("welcomeBar").style.display = "flex";
@@ -279,7 +298,6 @@ function getRandomQuote() {
                     d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
             }
         } else if (isOwner && fromSquare) {
-            // 从广场进入自己的名片，只能看，不能改
             document.getElementById("logoutBtn").style.display = "inline-flex";
         }
 
@@ -288,11 +306,6 @@ function getRandomQuote() {
         alert("加载出错");
     }
 })();
-
-function truncate(str, len){
-    if(!str) return "";
-    return str.length > len ? str.slice(0, len) + "..." : str;
-}
 
 window.edit = function(){
     location.href = "profile.html";
