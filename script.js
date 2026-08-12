@@ -78,6 +78,20 @@ window.saveProfile = async function(){
     }
 
     let avatarUrl = "";
+    let honorImageUrl = "";
+    const honorFileInput = document.getElementById("honor_image");
+    if(honorFileInput && honorFileInput.files && honorFileInput.files[0]){
+        const file = honorFileInput.files[0];
+        if(file.size > 2 * 1024 * 1024){
+            alert("荣誉图片太大，请选择 2MB 以内的图片");
+            return;
+        }
+        honorImageUrl = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(file);
+        });
+    }
     const fileInput = document.getElementById("avatar");
 
     if(fileInput.files && fileInput.files[0]){
@@ -103,6 +117,7 @@ window.saveProfile = async function(){
         phone: document.getElementById("phone").value,
         email: document.getElementById("email").value,
         github: document.getElementById("github").value,
+	honor_text: document.getElementById("honor_text").value,
     };
 
     if(avatarUrl){
@@ -121,6 +136,10 @@ window.saveProfile = async function(){
         alert("保存成功");
         location.href="card.html";
     }
+    
+        if(honorImageUrl){
+        profile.honor_image = honorImageUrl;
+    }
 }
 
 
@@ -134,13 +153,16 @@ window.clearProfile = function(){
     document.getElementById("phone").value = "";
     document.getElementById("email").value = "";
     document.getElementById("github").value = "";
+    document.getElementById("honor_text").value = "";
+    document.getElementById("honor_image").value = "";
+    document.getElementById("honorFileName").textContent = "未选择文件";
     document.getElementById("avatar").value = "";
     document.getElementById("fileName").textContent = "未选择文件";
 }
 
 
-window.updateFileName = function(input){
-    const nameSpan = document.getElementById("fileName");
+window.updateFileName = function(input, nameId){
+    const nameSpan = document.getElementById(nameId || "fileName");
     if(input.files && input.files[0]){
         nameSpan.textContent = input.files[0].name;
         nameSpan.style.color = "#333";

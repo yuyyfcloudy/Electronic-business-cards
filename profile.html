@@ -17,6 +17,12 @@
 <input id="phone" placeholder="电话号码">
 <input id="email" placeholder="邮箱">
 <input id="github" placeholder="GitHub 链接">
+<textarea id="honor_text" placeholder="个人荣誉（如：2024年优秀毕业生、ACM铜奖等）"></textarea>
+<label class="file-upload">
+    <input type="file" id="honor_image" accept="image/*" onchange="updateFileName(this, 'honorFileName')">
+    <span class="file-btn">🏆 荣誉图片</span>
+    <span class="file-name" id="honorFileName">未选择文件</span>
+</label>
 
 <label class="file-upload">
     <input type="file" id="avatar" accept="image/*" onchange="updateFileName(this)">
@@ -55,6 +61,7 @@ import { supabase } from "./supabase.js";
         document.getElementById("phone").value = data.phone || "";
         document.getElementById("email").value = data.email || "";
         document.getElementById("github").value = data.github || "";
+	document.getElementById("honor_text").value = data.honor_text || "";
     }
 })();
 </script>

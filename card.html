@@ -59,6 +59,18 @@
       </div>
     </section>
 
+    <!-- 个人荣誉区块 -->
+    <section class="info-block block-quote" id="honorBlock" style="display:none;">
+      <div class="block-header">
+        <span class="block-icon">🏆</span>
+        <span class="block-title">个人荣誉</span>
+      </div>
+      <div class="block-body">
+        <p id="honorText" class="quote-text" style="display:none;"></p>
+        <img id="honorImg" style="display:none;max-width:100%;border-radius:12px;margin-top:16px;box-shadow:0 4px 15px rgba(0,0,0,0.3);" alt="荣誉图片">
+      </div>
+    </section>
+
     <!-- 联系方式区块 — 卡片网格 -->
     <section class="info-block block-contact">
       <div class="block-header">
@@ -222,6 +234,29 @@ function getRandomQuote() {
             githubVal.textContent = "未填写";
             githubLink.classList.add("disabled");
             githubLink.href = "#";
+        }
+
+	 // 个人荣誉
+        const honorBlock = document.getElementById("honorBlock");
+        const honorTextEl = document.getElementById("honorText");
+        const honorImg = document.getElementById("honorImg");
+        
+        if(data.honor_text || data.honor_image){
+            honorBlock.style.display = "block";
+            
+            if(data.honor_text && data.honor_text.trim()){
+                honorTextEl.textContent = data.honor_text;
+                honorTextEl.style.display = "block";
+            } else {
+                honorTextEl.style.display = "none";
+            }
+            
+            if(data.honor_image){
+                honorImg.src = data.honor_image;
+                honorImg.style.display = "block";
+            } else {
+                honorImg.style.display = "none";
+            }
         }
 
         // 判断是否是主人
