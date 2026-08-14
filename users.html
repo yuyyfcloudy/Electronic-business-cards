@@ -6,6 +6,7 @@
 <title>名片广场</title>
 <link rel="stylesheet" href="style.css">
 
+<base target="_blank">
 </head>
 <body class="users-body">
 
@@ -70,9 +71,12 @@ function truncate(str, len) {
 }
 
 // 创建一张新卡片 DOM，返回 { el, refs }
-function createCard(user) {
+function createCard(user, isNewEntry = false) {
     const card = document.createElement("div");
     card.className = "user-card";
+    if (isNewEntry) {
+        card.classList.add("card-enter");
+    }
     card.dataset.id = user.id;
     card.onclick = () => { location.href = "card.html?id=" + encodeURIComponent(user.id); };
 
@@ -317,7 +321,7 @@ function render(data) {
                 list.insertBefore(entry.el, refNode);
             }
         } else {
-            const newEntry = createCard(user);
+            const newEntry = createCard(user, !isFirstLoad);
             cardMap.set(user.id, newEntry);
             if (refNode) {
                 list.insertBefore(newEntry.el, refNode);

@@ -1475,3 +1475,218 @@ input[type="file"]:hover {
         height: 100px;
     }
 }
+
+/* ============================================
+   新增动画效果 — 简约商务风格
+   柔和、速度适中、不花哨
+   ============================================ */
+
+/* ── 1. 页面卡片加载淡入浮现动画 ── */
+
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 名片页侧边栏 */
+.sidebar-card {
+    animation: cardFadeIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both;
+}
+
+/* 名片页信息块依次浮现 */
+.info-block {
+    animation: cardFadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.info-block:nth-of-type(1) { animation-delay: 0.12s; }
+.info-block:nth-of-type(2) { animation-delay: 0.20s; }
+.info-block:nth-of-type(3) { animation-delay: 0.28s; }
+.info-block:nth-of-type(4) { animation-delay: 0.36s; }
+
+/* 登录面板卡片 */
+.login-box {
+    animation: cardFadeIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.15s both;
+}
+
+/* ── 2. 按钮悬浮放大 + 颜色过渡动画 ── */
+
+/* 统一过渡曲线，更柔和 */
+button,
+.login-btn,
+.action-btn-primary,
+.action-btn-secondary,
+.action-mini-btn,
+.modal-buttons button {
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                box-shadow 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                background-color 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                border-color 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                color 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                filter 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 通用按钮 */
+button:hover {
+    transform: translateY(-2px) scale(1.03);
+    filter: brightness(1.08);
+}
+
+button:active {
+    transform: translateY(0) scale(0.98);
+    filter: brightness(0.95);
+}
+
+/* 登录按钮 */
+.login-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+    filter: brightness(1.1);
+    box-shadow: 0 8px 30px rgba(124, 58, 237, 0.4);
+}
+
+.login-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* 弹窗按钮 */
+.modal-buttons button:hover {
+    transform: scale(1.04);
+    filter: brightness(1.1);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.25);
+}
+
+.modal-buttons button.secondary:hover {
+    filter: brightness(0.95);
+    box-shadow: none;
+}
+
+/* 管理操作按钮 */
+.action-btn-primary:hover {
+    transform: translateY(-2px) scale(1.03);
+    filter: brightness(1.1);
+}
+
+.action-btn-secondary:hover {
+    transform: translateY(-2px) scale(1.03);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* 迷你管理按钮 */
+.action-mini-btn-primary:hover {
+    transform: translateY(-2px) scale(1.04);
+    filter: brightness(1.15);
+}
+
+.action-mini-btn-secondary:hover {
+    transform: translateY(-2px) scale(1.04);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* 表单内双按钮 */
+.box button:hover,
+.card button:hover {
+    transform: translateY(-2px) scale(1.03);
+    filter: brightness(1.08);
+}
+
+/* 链接按钮 */
+.buttons a {
+    transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.buttons a:hover {
+    transform: translateX(5px) scale(1.02);
+}
+
+/* ── 3. 列表条目新增平滑出现效果 ── */
+
+@keyframes cardEnter {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.user-card.card-enter {
+    animation: cardEnter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* ── 4. 其他元素柔和过渡增强 ── */
+
+/* 联系方式卡片 */
+.contact-box {
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                background-color 0.35s ease,
+                border-color 0.35s ease,
+                box-shadow 0.35s ease;
+}
+
+.contact-box:hover {
+    transform: translateY(-3px) scale(1.02);
+}
+
+/* 荣誉图片 */
+.honor-img {
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+}
+
+.honor-img:hover {
+    transform: scale(1.05);
+}
+
+/* 头像 */
+.avatar {
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.avatar:hover {
+    transform: scale(1.06);
+}
+
+/* 名片广场头像 */
+.card-avatar {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 导航链接 */
+.nav a,
+.nav-back,
+.nav-logout {
+    transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 文件上传区域 */
+.file-upload {
+    transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 输入框聚焦 */
+input, textarea {
+    transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 名片广场卡片悬浮增强 */
+.user-card {
+    transition: all 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* 搜索框聚焦 */
+#searchInput {
+    transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+#searchInput:focus {
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
