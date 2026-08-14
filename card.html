@@ -217,7 +217,7 @@ function renderHonorImages(honorData) {
         }
         document.getElementById("name").textContent = data.name || "未命名";
         document.getElementById("job").textContent = data.job || "暂无职位";
-        document.getElementById("userId").textContent = (data.id || "").slice(0, 12) + "...";
+	document.getElementById("userId").textContent = data.id || "—";
 
         const introEl = document.getElementById("intro");
         if(data.intro && data.intro.trim()){
