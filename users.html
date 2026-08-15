@@ -34,6 +34,7 @@
 import { supabase } from "./supabase.js";
 
 const list = document.getElementById("userList");
+let currentUserId = null;
 let allData = [];
 
 document.getElementById("searchInput").addEventListener("input", (e) => {
@@ -73,6 +74,8 @@ function truncate(str, len) {
 function createCard(user, isNewEntry = false) {
     const card = document.createElement("div");
     const hiddenFields = user.hidden_fields || [];
+    const isOwner = user.id === currentUserId;
+    const shouldHideField = (field) => hiddenFields.includes(field) && !isOwner;
     card.className = "user-card";
     if (isNewEntry) {
         card.classList.add("card-enter");
@@ -112,13 +115,13 @@ function createCard(user, isNewEntry = false) {
 
     const nameEl = document.createElement("h3");
     nameEl.className = "card-name";
-    nameEl.textContent = hiddenFields.includes('name') ? "已隐藏" : (user.name || "未命名");
-    if(hiddenFields.includes('name')) nameEl.style.opacity = "0.5";
+    nameEl.textContent = shouldHideField('name') ? "已隐藏" : (user.name || "未命名");
+    if(shouldHideField('name')) nameEl.style.opacity = "0.5";
 
     const jobEl = document.createElement("p");
     jobEl.className = "card-job";
-    jobEl.textContent = hiddenFields.includes('job') ? "已隐藏" : (user.job || "暂无职位");
-    if(hiddenFields.includes('job')) jobEl.style.opacity = "0.5";
+    jobEl.textContent = shouldHideField('job') ? "已隐藏" : (user.job || "暂无职位");
+    if(shouldHideField('job')) jobEl.style.opacity = "0.5";
 
     const idEl = document.createElement("span");
     idEl.className = "card-id";
@@ -145,7 +148,7 @@ function createCard(user, isNewEntry = false) {
         const item = document.createElement("div");
         item.className = "contact-item";
         
-        if(hiddenFields.includes(def.key)) {
+        if(shouldHideField(def.key)) {
             item.classList.add("empty");
             const icon = document.createElement("span");
             icon.className = "icon";
@@ -385,7 +388,9 @@ function render(data) {
 
 // 拉取数据 — 查询全部字段
 async function fetchData() {
-    const { data, error } = await supabase
+	  const { data: authData } = await supabase.auth.getUser();
+  	  currentUserId = authData.user ? authData.user.id : null;
+ 	  const { data, error } = await supabase
         .from("profiles")
         .select("id, name, job, avatar, phone, email, github, intro, hidden_fields, is_hidden");
 
