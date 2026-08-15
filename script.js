@@ -65,6 +65,11 @@ window.saveProfile = async function(){
         return;
     }
 
+        // 收集隐私设置
+    const hiddenChecks = document.querySelectorAll('.hide-check:checked');
+    const hiddenFields = Array.from(hiddenChecks).map(cb => cb.dataset.field);
+    const isHidden = document.getElementById("hideAllCard").checked;
+
     let avatarUrl = "";
     let honorImageUrls = [];
 
@@ -108,6 +113,8 @@ window.saveProfile = async function(){
         email: document.getElementById("email").value,
         github: document.getElementById("github").value,
         honor_text: document.getElementById("honor_text").value,
+        hidden_fields: hiddenFields,
+        is_hidden: isHidden
     };
 
     if(avatarUrl){

@@ -73,6 +73,7 @@ function truncate(str, len) {
 // 创建一张新卡片 DOM，返回 { el, refs }
 function createCard(user, isNewEntry = false) {
     const card = document.createElement("div");
+    const hiddenFields = user.hidden_fields || [];
     card.className = "user-card";
     if (isNewEntry) {
         card.classList.add("card-enter");
@@ -112,11 +113,13 @@ function createCard(user, isNewEntry = false) {
 
     const nameEl = document.createElement("h3");
     nameEl.className = "card-name";
-    nameEl.textContent = user.name || "未命名";
+    nameEl.textContent = hiddenFields.includes('name') ? "已隐藏" : (user.name || "未命名");
+    if(hiddenFields.includes('name')) nameEl.style.opacity = "0.5";
 
     const jobEl = document.createElement("p");
     jobEl.className = "card-job";
-    jobEl.textContent = user.job || "暂无职位";
+    jobEl.textContent = hiddenFields.includes('job') ? "已隐藏" : (user.job || "暂无职位");
+    if(hiddenFields.includes('job')) jobEl.style.opacity = "0.5";
 
     const idEl = document.createElement("span");
     idEl.className = "card-id";
@@ -142,6 +145,26 @@ function createCard(user, isNewEntry = false) {
     contactDefs.forEach(def => {
         const item = document.createElement("div");
         item.className = "contact-item";
+        
+        if(hiddenFields.includes(def.key)) {
+            item.classList.add("empty");
+            const icon = document.createElement("span");
+            icon.className = "icon";
+            icon.textContent = def.icon;
+            const label = document.createElement("span");
+            label.className = "label";
+            label.textContent = def.label;
+            const value = document.createElement("span");
+            value.className = "value";
+            value.textContent = "已隐藏";
+            item.appendChild(icon);
+            item.appendChild(label);
+            item.appendChild(value);
+            contacts.appendChild(item);
+            contactRefs[def.key] = { item, value };
+            return;
+        }
+
         const val = user[def.key];
         if (!val) item.classList.add("empty");
 
@@ -164,6 +187,7 @@ function createCard(user, isNewEntry = false) {
         contactRefs[def.key] = { item, value };
     });
 
+
     // ===== 简介区 =====
     const bio = document.createElement("div");
     bio.className = "card-bio";
@@ -174,12 +198,17 @@ function createCard(user, isNewEntry = false) {
 
     const bioText = document.createElement("p");
     bioText.className = "card-bio-text";
-    const intro = user.intro;
-    if (intro && String(intro).trim()) {
-        bioText.textContent = String(intro).trim();
-    } else {
+    if(hiddenFields.includes('intro')) {
         bioText.classList.add("empty");
-        bioText.textContent = "这位用户还没有填写个人介绍...";
+        bioText.textContent = "该用户已隐藏个人介绍";
+    } else {
+        const intro = user.intro;
+        if (intro && String(intro).trim()) {
+            bioText.textContent = String(intro).trim();
+        } else {
+            bioText.classList.add("empty");
+            bioText.textContent = "这位用户还没有填写个人介绍...";
+        }
     }
 
     bio.appendChild(bioLabel);
@@ -222,6 +251,7 @@ function createCard(user, isNewEntry = false) {
 // 更新已有卡片，只改动真正变化的数据
 function updateCard(entry, user) {
     const { refs } = entry;
+    const hiddenFields = user.hidden_fields || [];
 
     // 头像
     const newAvatar = getAvatarUrl(user.avatar);
@@ -236,16 +266,18 @@ function updateCard(entry, user) {
     }
 
     // 姓名
-    const newName = user.name || "未命名";
+    const newName = hiddenFields.includes('name') ? "已隐藏" : (user.name || "未命名");
     if (refs.nameEl.textContent !== newName) {
         refs.nameEl.textContent = newName;
     }
+    refs.nameEl.style.opacity = hiddenFields.includes('name') ? "0.5" : "1";
 
     // 职位
-    const newJob = user.job || "暂无职位";
+    const newJob = hiddenFields.includes('job') ? "已隐藏" : (user.job || "暂无职位");
     if (refs.jobEl.textContent !== newJob) {
         refs.jobEl.textContent = newJob;
     }
+    refs.jobEl.style.opacity = hiddenFields.includes('job') ? "0.5" : "1";
 
     // ID
     const newId = "ID: " + truncate(user.id, 12);
@@ -261,37 +293,50 @@ function updateCard(entry, user) {
     ];
     contactDefs.forEach(def => {
         const ref = refs.contactRefs[def.key];
-        const val = user[def.key];
-        const displayVal = val ? truncate(val, 16) : "未填写";
-
-        if (ref.value.textContent !== displayVal) {
-            ref.value.textContent = displayVal;
-        }
-
-        if (val) {
-            ref.item.classList.remove("empty");
-        } else {
+        if(hiddenFields.includes(def.key)) {
+            const displayVal = "已隐藏";
+            if(ref.value.textContent !== displayVal) {
+                ref.value.textContent = displayVal;
+            }
             ref.item.classList.add("empty");
+        } else {
+            const val = user[def.key];
+            const displayVal = val ? truncate(val, 16) : "未填写";
+            if(ref.value.textContent !== displayVal) {
+                ref.value.textContent = displayVal;
+            }
+            if(val) {
+                ref.item.classList.remove("empty");
+            } else {
+                ref.item.classList.add("empty");
+            }
         }
     });
 
     // 简介
-    const intro = user.intro;
-    if (intro && String(intro).trim()) {
-        const newIntro = String(intro).trim();
-        if (refs.bioText.textContent !== newIntro) {
-            refs.bioText.textContent = newIntro;
-            refs.bioText.classList.remove("empty");
+    if(hiddenFields.includes('intro')) {
+        const hiddenText = "该用户已隐藏个人介绍";
+        if(refs.bioText.textContent !== hiddenText) {
+            refs.bioText.textContent = hiddenText;
+            refs.bioText.classList.add("empty");
         }
     } else {
-        const emptyText = "这位用户还没有填写个人介绍...";
-        if (refs.bioText.textContent !== emptyText) {
-            refs.bioText.textContent = emptyText;
-            refs.bioText.classList.add("empty");
+        const intro = user.intro;
+        if(intro && String(intro).trim()) {
+            const newIntro = String(intro).trim();
+            if(refs.bioText.textContent !== newIntro) {
+                refs.bioText.textContent = newIntro;
+                refs.bioText.classList.remove("empty");
+            }
+        } else {
+            const emptyText = "这位用户还没有填写个人介绍...";
+            if(refs.bioText.textContent !== emptyText) {
+                refs.bioText.textContent = emptyText;
+                refs.bioText.classList.add("empty");
+            }
         }
     }
 
-    // 更新点击事件
     entry.el.onclick = () => { location.href = "card.html?id=" + encodeURIComponent(user.id); };
 }
 
@@ -343,7 +388,7 @@ function render(data) {
 async function fetchData() {
     const { data, error } = await supabase
         .from("profiles")
-        .select("id, name, job, avatar, phone, email, github, intro");
+        .select("id, name, job, avatar, phone, email, github, intro, hidden_fields, is_hidden");
 
     if (error) {
         console.error(error);
@@ -353,7 +398,7 @@ async function fetchData() {
         return;
     }
 
-    allData = data || [];
+    allData = (data || []).filter(u => !u.is_hidden);
     
     // 如果搜索框有内容，保持当前搜索结果
     const keyword = document.getElementById("searchInput").value.toLowerCase().trim();

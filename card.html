@@ -211,95 +211,117 @@ function renderHonorImages(honorData) {
             location.href = "users.html";
             return;
         }
+	
+	const hiddenFields = data.hidden_fields || [];
+	const shouldHideField = (field) => hiddenFields.includes(field) && !isOwner;
+
+        // 非主人访问已隐藏名片，直接拦截
+        if((data.is_hidden === true || data.is_hidden === "true") && !isOwner){
+        alert("该名片已隐藏");
+        location.href = "users.html";
+        return;
+    }
 
         if(data.avatar){
             document.getElementById("avatar").src = data.avatar;
         }
-        document.getElementById("name").textContent = data.name || "未命名";
-        document.getElementById("job").textContent = data.job || "暂无职位";
+        document.getElementById("name").textContent = shouldHideField('name') ? "已隐藏" : (data.name || "未命名");
+        if(shouldHideField('name')) document.getElementById("name").style.opacity = "0.5";
+        document.getElementById("job").textContent = shouldHideField('job') ? "已隐藏" : (data.job || "暂无职位");
+        if(shouldHideField('job')) document.getElementById("job").style.opacity = "0.5";
 	document.getElementById("userId").textContent = data.id || "—";
 
-        const introEl = document.getElementById("intro");
-        if(data.intro && data.intro.trim()){
-            introEl.textContent = data.intro;
-            introEl.classList.remove("empty");
-        } else {
-            introEl.textContent = "这位用户还没有填写个人介绍...";
-            introEl.classList.add("empty");
-        }
+          const introEl = document.getElementById("intro");
+    if(data.intro && data.intro.trim() && !shouldHideField('intro')){
+        introEl.textContent = data.intro;
+        introEl.classList.remove("empty");
+    } else {
+        introEl.textContent = shouldHideField('intro') ? "该用户已隐藏个人介绍" : "这位用户还没有填写个人介绍...";
+        if(shouldHideField('intro')) introEl.classList.add("empty");
+    }
 
-        const phoneVal = document.getElementById("phoneVal");
-        const phoneLink = document.getElementById("phoneLink");
-        if(data.phone){
-            phoneVal.textContent = data.phone;
-            phoneLink.href = "tel:" + data.phone;
-            phoneLink.classList.remove("disabled");
-        } else {
-            phoneVal.textContent = "未填写";
-            phoneLink.classList.add("disabled");
-            phoneLink.href = "#";
-        }
+    const phoneVal = document.getElementById("phoneVal");
+    const phoneLink = document.getElementById("phoneLink");
+    if(data.phone && !shouldHideField('phone')){
+        phoneVal.textContent = data.phone;
+        phoneLink.href = "tel:" + data.phone;
+        phoneLink.classList.remove("disabled");
+    } else {
+        phoneVal.textContent = shouldHideField('phone') ? "已隐藏" : "未填写";
+        phoneLink.classList.add("disabled");
+        phoneLink.href = "#";
+    }
 
-        const emailVal = document.getElementById("emailVal");
-        const emailLink = document.getElementById("emailLink");
-        if(data.email){
-            emailVal.textContent = data.email;
-            emailLink.href = "mailto:" + data.email;
-            emailLink.classList.remove("disabled");
-        } else {
-            emailVal.textContent = "未填写";
-            emailLink.classList.add("disabled");
-            emailLink.href = "#";
-        }
+    const emailVal = document.getElementById("emailVal");
+    const emailLink = document.getElementById("emailLink");
+    if(data.email && !shouldHideField('email')){
+        emailVal.textContent = data.email;
+        emailLink.href = "mailto:" + data.email;
+        emailLink.classList.remove("disabled");
+    } else {
+        emailVal.textContent = shouldHideField('email') ? "已隐藏" : "未填写";
+        emailLink.classList.add("disabled");
+        emailLink.href = "#";
+    }
 
-        const githubVal = document.getElementById("githubVal");
-        const githubLink = document.getElementById("githubLink");
-        if(data.github){
-            githubVal.textContent = truncate(data.github, 24);
-            githubLink.href = data.github;
-            githubLink.target = "_blank";
-            githubLink.classList.remove("disabled");
-        } else {
-            githubVal.textContent = "未填写";
-            githubLink.classList.add("disabled");
-            githubLink.href = "#";
-        }
+    const githubVal = document.getElementById("githubVal");
+    const githubLink = document.getElementById("githubLink");
+    if(data.github && !shouldHideField('github')){
+        githubVal.textContent = truncate(data.github, 24);
+        githubLink.href = data.github;
+        githubLink.target = "_blank";
+        githubLink.classList.remove("disabled");
+    } else {
+        githubVal.textContent = shouldHideField('github') ? "已隐藏" : "未填写";
+        githubLink.classList.add("disabled");
+        githubLink.href = "#";
+    }
 
-        const honorBlock = document.getElementById("honorBlock");
-        const honorTextEl = document.getElementById("honorText");
-        
-        if(data.honor_text || data.honor_image){
-            honorBlock.style.display = "block";
-            
-            if(data.honor_text && data.honor_text.trim()){
-                honorTextEl.textContent = data.honor_text;
-                honorTextEl.style.display = "block";
-            } else {
-                honorTextEl.style.display = "none";
-            }
-            
+    const honorBlock = document.getElementById("honorBlock");
+    const honorTextEl = document.getElementById("honorText");
+    const hasVisibleHonor = (data.honor_text && !shouldHideField('honor_text')) || (data.honor_image && !shouldHideField('honor_image'));
+    
+    if(hasVisibleHonor){
+        honorBlock.style.display = "block";
+        if(data.honor_text && data.honor_text.trim() && !shouldHideField('honor_text')){
+            honorTextEl.textContent = data.honor_text;
+            honorTextEl.style.display = "block";
+        } else {
+            honorTextEl.style.display = "none";
+        }
+        if(!shouldHideField('honor_image')){
             renderHonorImages(data.honor_image);
+        } else {
+            document.getElementById("honorImgContainer").innerHTML = "";
         }
+    } else {
+        honorBlock.style.display = "none";
+    }
 
         const { data: currentUser } = await supabase.auth.getUser();
         isOwner = currentUser.user && currentUser.user.id === targetId;
 
         const fromSquare = urlParams.has('id');
 
-        if(isOwner && !fromSquare){
-            document.getElementById("actionBlock").style.display = "block";
-            document.getElementById("logoutBtn").style.display = "inline-flex";
-            document.getElementById("welcomeBar").style.display = "flex";
+    if(isOwner && !fromSquare){
+        document.getElementById("actionBlock").style.display = "block";
+        document.getElementById("logoutBtn").style.display = "inline-flex";
+        document.getElementById("welcomeBar").style.display = "flex";
+        if(data.is_hidden){
+            document.getElementById("welcomeText").textContent = "🙈 你的名片当前在名片广场中已隐藏";
+            document.getElementById("welcomeText").style.color = "#ff6b6b";
+        } else {
             document.getElementById("welcomeText").textContent = getRandomQuote();
-
-            if(currentUser.user && currentUser.user.created_at){
-                const d = new Date(currentUser.user.created_at);
-                document.getElementById("joinDate").textContent = 
-                    d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
-            }
-        } else if (isOwner && fromSquare) {
-            document.getElementById("logoutBtn").style.display = "inline-flex";
         }
+        if(currentUser.user && currentUser.user.created_at){
+            const d = new Date(currentUser.user.created_at);
+            document.getElementById("joinDate").textContent = 
+                d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+        }
+    } else if (isOwner && fromSquare) {
+        document.getElementById("logoutBtn").style.display = "inline-flex";
+    }
+
 
     } catch(err) {
         console.error(err);

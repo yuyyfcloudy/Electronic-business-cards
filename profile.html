@@ -30,6 +30,29 @@
     <span class="file-name" id="fileName">未选择文件</span>
 </label>
 
+<div class="privacy-section">
+    <div class="privacy-title">🔒 隐私设置</div>
+    <p class="privacy-hint">勾选后，对应信息在名片广场中不可见</p>
+    <div class="privacy-grid">
+        <label class="privacy-item"><input type="checkbox" data-field="name" class="hide-check"> 姓名</label>
+        <label class="privacy-item"><input type="checkbox" data-field="job" class="hide-check"> 职位</label>
+        <label class="privacy-item"><input type="checkbox" data-field="intro" class="hide-check"> 个人介绍</label>
+        <label class="privacy-item"><input type="checkbox" data-field="phone" class="hide-check"> 电话</label>
+        <label class="privacy-item"><input type="checkbox" data-field="email" class="hide-check"> 邮箱</label>
+        <label class="privacy-item"><input type="checkbox" data-field="github" class="hide-check"> GitHub</label>
+        <label class="privacy-item"><input type="checkbox" data-field="honor_text" class="hide-check"> 荣誉文字</label>
+        <label class="privacy-item"><input type="checkbox" data-field="honor_image" class="hide-check"> 荣誉图片</label>
+    </div>
+    <div class="privacy-divider"></div>
+    <label class="privacy-all">
+        <input type="checkbox" id="hideAllCard"> 🙈 全部隐藏（在名片广场中隐藏整张名片）
+    </label>
+    <div class="privacy-quick-actions">
+        <button onclick="hideAllFields()" style="background:linear-gradient(135deg, #ff6b6b, #ee5a5a);">🙈 全选隐藏</button>
+        <button onclick="showAllFields()" style="background:linear-gradient(135deg, #51cf66, #40c057);">👁️ 全部显示</button>
+    </div>
+</div>
+
 <div style="display:flex;gap:12px;margin-top:15px;">
     <button onclick="saveProfile()" style="flex:1;">💾 保存修改</button>
     <button onclick="clearProfile()" style="flex:1;background:linear-gradient(135deg, #ff6b6b, #ee5a5a);">🗑️ 清空</button>
@@ -60,6 +83,16 @@ import { supabase } from "./supabase.js";
         document.getElementById("email").value = data.email || "";
         document.getElementById("github").value = data.github || "";
         document.getElementById("honor_text").value = data.honor_text || "";
+	        // 恢复隐私设置
+        if(data.hidden_fields && Array.isArray(data.hidden_fields)){
+            data.hidden_fields.forEach(field => {
+                const cb = document.querySelector(`.hide-check[data-field="${field}"]`);
+                if(cb) cb.checked = true;
+            });
+        }
+        if(data.is_hidden){
+            document.getElementById("hideAllCard").checked = true;
+        }
 
         if(data.honor_image){
             try {
@@ -75,6 +108,16 @@ import { supabase } from "./supabase.js";
         }
     }
 })();
+
+window.hideAllFields = function(){
+    document.querySelectorAll('.hide-check').forEach(cb => cb.checked = true);
+    document.getElementById("hideAllCard").checked = true;
+};
+window.showAllFields = function(){
+    document.querySelectorAll('.hide-check').forEach(cb => cb.checked = false);
+    document.getElementById("hideAllCard").checked = false;
+};
+
 </script>
 
 </body>
