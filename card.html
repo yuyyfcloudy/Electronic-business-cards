@@ -302,9 +302,10 @@ function renderHonorImages(honorData) {
             } else {
                 document.getElementById("honorImgContainer").innerHTML = "";
             }
-        } else {
+       	      else {
             honorBlock.style.display = "none";
-        }
+    	    }
+	}
 
         // 6. 显示管理按钮和欢迎语
         const fromSquare = urlParams.has('id');
