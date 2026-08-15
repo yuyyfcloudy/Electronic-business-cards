@@ -266,7 +266,7 @@
     height: 2px;
     background: linear-gradient(90deg, #7c3aed, #a78bfa);
     width: 0%;
-    animation: progressFill 13s linear 2s forwards;
+    animation: progressFill 12s linear 2s forwards;
     z-index: 10;
 }
 
@@ -318,7 +318,7 @@
         进入系统
         <span class="landing-arrow">→</span>
     </a>
-    <p class="landing-hint"><span id="countdown">13</span> 秒后自动进入登录页面</p>
+    <p class="landing-hint"><span id="countdown">12</span> 秒后自动进入登录页面</p>
 </div>
 
 <!-- 底部进度条 -->
@@ -339,7 +339,7 @@ for (let i = 0; i < 30; i++) {
 }
 
 // 倒计时与自动跳转
-let seconds = 13;
+let seconds = 12;
 const countdownEl = document.getElementById("countdown");
 const timer = setInterval(() => {
     seconds--;
