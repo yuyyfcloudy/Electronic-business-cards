@@ -3,66 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>名片广场</title>
+<title>我的电子名片</title>
 <link rel="stylesheet" href="style.css">
 </head>
-<body class="users-body">
+<body class="profile-body">
 
-<nav class="nav" style="justify-content:space-between;">
-    <div style="width:220px;"></div>
-    
-    <div style="display:flex;gap:40px;">
-        <a href="index.html">🏠 首页</a>
-        <a href="users.html">📇 名片广场</a>
-    </div>
-    
-    <input type="text" id="searchInput" placeholder="🔍 搜索姓名或职位..." 
-           style="padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.8);width:220px;outline:none;font-size:14px;">
+<nav class="profile-nav">
+    <a href="users.html" class="nav-back">← 返回名片广场</a>
+    <span class="nav-title">电子名片</span>
+    <a id="logoutBtn" href="javascript:void(0)" class="nav-logout" onclick="doLogout()" style="display:none;">退出登录</a>
 </nav>
 
-<header class="page-header">
-    <h1>名片广场</h1>
-    <p>发现优秀的电子名片，点击卡片查看完整信息</p>
-</header>
-
-<div class="grid" id="userList">
-    <div class="loading-state">正在加载名片数据...</div>
+<div class="profile-wrap" id="profileWrap">
+    <div class="loading-state" style="width:100%;color:rgba(255,255,255,0.4);padding:80px 20px;text-align:center;">
+        正在加载名片信息...
+    </div>
 </div>
 
 <script type="module">
 import { supabase } from "./supabase.js";
 
-const list = document.getElementById("userList");
-let currentUserId = null;
-let allData = [];
+const wrap = document.getElementById("profileWrap");
+const logoutBtn = document.getElementById("logoutBtn");
 
-document.getElementById("searchInput").addEventListener("input", (e) => {
-    const keyword = e.target.value.toLowerCase().trim();
-    if (!keyword) {
-        render(allData);
-        return;
-    }
-    const filtered = allData.filter(u => 
-        (u.name || "").toLowerCase().includes(keyword) ||
-        (u.job || "").toLowerCase().includes(keyword)
-    );
-    render(filtered);
-});
-
-const cardMap = new Map();
-let isFirstLoad = true;
-
-function getAvatarUrl(raw) {
-    if (raw && typeof raw === "string" && raw.trim().length > 0) {
-        return raw.trim();
-    }
-    return "";
-}
-
-function truncate(str, len) {
-    if (!str) return "";
-    str = String(str);
-    return str.length > len ? str.slice(0, len) + "..." : str;
+function getQueryId() {
+    const p = new URLSearchParams(window.location.search);
+    const id = p.get("id");
+    return id ? decodeURIComponent(id) : null;
 }
 
 function normalizeHiddenFields(raw) {
@@ -74,348 +41,422 @@ function normalizeHiddenFields(raw) {
     return [];
 }
 
-function createCard(user, isNewEntry = false) {
-    const card = document.createElement("div");
-    const hiddenFields = normalizeHiddenFields(user.hidden_fields);
-    const isOwner = user.id === currentUserId;
-    const shouldHideField = (field) => hiddenFields.includes(field) && !isOwner;
-    
-    card.className = "user-card";
-    if (isNewEntry) {
-        card.classList.add("card-enter");
+function parseHonorImages(raw) {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw.filter(x => x && typeof x === 'string');
+    if (typeof raw === 'string') {
+        try {
+            const arr = JSON.parse(raw);
+            return Array.isArray(arr) ? arr.filter(x => x && typeof x === 'string') : [raw];
+        } catch(e) {
+            return [raw];
+        }
     }
-    card.dataset.id = user.id;
-    card.onclick = () => { location.href = "card.html?id=" + encodeURIComponent(user.id); };
+    return [];
+}
 
-    // ===== 头部：头像 + 基本信息 =====
-    const header = document.createElement("div");
-    header.className = "card-header";
+function truncate(str, len) {
+    if (!str) return "";
+    str = String(str);
+    return str.length > len ? str.slice(0, len) + "..." : str;
+}
+
+window.doLogout = async function() {
+    if (!confirm("确定要退出登录吗？")) return;
+    await supabase.auth.signOut();
+    location.href = "login.html";
+};
+
+function buildSidebar(user, isOwner, shouldHideField) {
+    const aside = document.createElement("aside");
+    aside.className = "profile-sidebar";
+
+    const card = document.createElement("div");
+    card.className = "sidebar-card";
 
     const avatarWrap = document.createElement("div");
-    avatarWrap.className = "card-avatar-wrap";
+    avatarWrap.className = "sidebar-avatar-wrap";
 
     const avatar = document.createElement("img");
-    avatar.className = "card-avatar";
+    avatar.className = "sidebar-avatar";
     avatar.alt = "头像";
-    const avatarUrl = getAvatarUrl(user.avatar);
-    if (avatarUrl) {
-        avatar.src = avatarUrl;
-        avatar.onerror = function() {
-            this.src = "";
-            this.style.background = "rgba(255,255,255,0.05)";
-        };
+    if (user.avatar && typeof user.avatar === 'string' && user.avatar.trim()) {
+        avatar.src = user.avatar.trim();
+        avatar.onerror = function() { this.src = ""; this.style.background = "rgba(255,255,255,0.04)"; };
     } else {
-        avatar.style.background = "rgba(255,255,255,0.05)";
+        avatar.style.background = "rgba(255,255,255,0.04)";
     }
 
-    const statusDot = document.createElement("div");
-    statusDot.className = "card-avatar-status";
+    const status = document.createElement("div");
+    status.className = "sidebar-status";
 
     avatarWrap.appendChild(avatar);
-    avatarWrap.appendChild(statusDot);
+    avatarWrap.appendChild(status);
 
-    const info = document.createElement("div");
-    info.className = "card-info";
+    const name = document.createElement("h2");
+    name.className = "sidebar-name";
+    name.textContent = shouldHideField('name') ? "已隐藏" : (user.name || "未命名用户");
 
-    const nameEl = document.createElement("h3");
-    nameEl.className = "card-name";
-    nameEl.textContent = shouldHideField('name') ? "已隐藏" : (user.name || "未命名");
-    if(shouldHideField('name')) nameEl.style.opacity = "0.5";
+    const job = document.createElement("p");
+    job.className = "sidebar-job";
+    job.textContent = shouldHideField('job') ? "已隐藏" : (user.job || "暂无职位");
 
-    const jobEl = document.createElement("p");
-    jobEl.className = "card-job";
-    jobEl.textContent = shouldHideField('job') ? "已隐藏" : (user.job || "暂无职位");
-    if(shouldHideField('job')) jobEl.style.opacity = "0.5";
+    const divider = document.createElement("div");
+    divider.className = "sidebar-divider";
 
-    const idEl = document.createElement("span");
-    idEl.className = "card-id";
-    idEl.textContent = "ID: " + truncate(user.id, 12);
+    const meta = document.createElement("div");
+    meta.className = "sidebar-meta";
 
-    info.appendChild(nameEl);
-    info.appendChild(jobEl);
-    info.appendChild(idEl);
-    header.appendChild(avatarWrap);
-    header.appendChild(info);
-
-    // ===== 联系方式分区 =====
-    const contacts = document.createElement("div");
-    contacts.className = "card-contacts";
-
-    const contactDefs = [
-        { key: "phone", icon: "📞", label: "电话" },
-        { key: "email", icon: "✉️", label: "邮箱" },
-        { key: "github", icon: "💻", label: "GitHub" },
+    const rows = [
+        { label: "用户 ID", value: truncate(user.id, 16) },
+        { label: "名片身份", value: isOwner ? "本人名片" : "他人名片" },
     ];
 
-    const contactRefs = {};
-    contactDefs.forEach(def => {
-        const item = document.createElement("div");
-        item.className = "contact-item";
-        
-        if(shouldHideField(def.key)) {
-            item.classList.add("empty");
-            const icon = document.createElement("span");
-            icon.className = "icon";
-            icon.textContent = def.icon;
-            const label = document.createElement("span");
-            label.className = "label";
-            label.textContent = def.label;
-            const value = document.createElement("span");
-            value.className = "value";
-            value.textContent = "已隐藏";
-            item.appendChild(icon);
-            item.appendChild(label);
-            item.appendChild(value);
-            contacts.appendChild(item);
-            contactRefs[def.key] = { item, value };
-            return;
-        }
+    if (!shouldHideField('name') && user.email) {
+        rows.push({ label: "账户邮箱", value: truncate(user.email, 24) });
+    }
 
-        const val = user[def.key];
-        if (!val) item.classList.add("empty");
+    rows.forEach(r => {
+        const row = document.createElement("div");
+        row.className = "meta-row";
+        const lb = document.createElement("span");
+        lb.className = "meta-label";
+        lb.textContent = r.label;
+        const vl = document.createElement("span");
+        vl.className = "meta-value";
+        vl.textContent = r.value;
+        row.appendChild(lb);
+        row.appendChild(vl);
+        meta.appendChild(row);
+    });
 
+    card.appendChild(avatarWrap);
+    card.appendChild(name);
+    card.appendChild(job);
+    card.appendChild(divider);
+    card.appendChild(meta);
+    aside.appendChild(card);
+
+    return aside;
+}
+
+function buildMain(user, isOwner, shouldHideField) {
+    const main = document.createElement("main");
+    main.className = "profile-main";
+
+    if (isOwner) {
+        const wb = document.createElement("div");
+        wb.className = "welcome-bar";
         const icon = document.createElement("span");
-        icon.className = "icon";
-        icon.textContent = def.icon;
+        icon.className = "welcome-icon";
+        icon.textContent = "👋";
+        const txt = document.createElement("span");
+        txt.className = "welcome-text";
+        txt.textContent = "欢迎回来，这里是你的专属名片主页";
+        wb.appendChild(icon);
+        wb.appendChild(txt);
+        main.appendChild(wb);
+    }
 
-        const label = document.createElement("span");
-        label.className = "label";
-        label.textContent = def.label;
+    const introBlock = document.createElement("div");
+    introBlock.className = "info-block block-quote";
 
-        const value = document.createElement("span");
-        value.className = "value";
-        value.textContent = val ? truncate(val, 16) : "未填写";
+    const introHeader = document.createElement("div");
+    introHeader.className = "block-header";
+    const introIcon = document.createElement("span");
+    introIcon.className = "block-icon";
+    introIcon.textContent = "💭";
+    const introTitle = document.createElement("span");
+    introTitle.className = "block-title";
+    introTitle.textContent = "个人简介";
+    introHeader.appendChild(introIcon);
+    introHeader.appendChild(introTitle);
 
-        item.appendChild(icon);
-        item.appendChild(label);
-        item.appendChild(value);
-        contacts.appendChild(item);
-        contactRefs[def.key] = { item, value };
-    });
-
-    // ===== 简介区 =====
-    const bio = document.createElement("div");
-    bio.className = "card-bio";
-
-    const bioLabel = document.createElement("div");
-    bioLabel.className = "card-bio-label";
-    bioLabel.textContent = "关于我";
-
-    const bioText = document.createElement("p");
-    bioText.className = "card-bio-text";
-    if(shouldHideField('intro')) {
-        bioText.classList.add("empty");
-        bioText.textContent = "该用户已隐藏个人介绍";
+    const introBody = document.createElement("div");
+    introBody.className = "block-body";
+    const introText = document.createElement("p");
+    introText.className = "quote-text";
+    if (shouldHideField('intro')) {
+        introText.classList.add("empty");
+        introText.textContent = "该用户已隐藏个人介绍";
+    } else if (user.intro && String(user.intro).trim()) {
+        introText.textContent = String(user.intro).trim();
     } else {
-        const intro = user.intro;
-        if (intro && String(intro).trim()) {
-            bioText.textContent = String(intro).trim();
-        } else {
-            bioText.classList.add("empty");
-            bioText.textContent = "这位用户还没有填写个人介绍...";
-        }
+        introText.classList.add("empty");
+        introText.textContent = "这位用户还没有填写个人介绍~";
     }
+    introBody.appendChild(introText);
 
-    bio.appendChild(bioLabel);
-    bio.appendChild(bioText);
+    introBlock.appendChild(introHeader);
+    introBlock.appendChild(introBody);
+    main.appendChild(introBlock);
 
-    // ===== 底部 =====
-    const footer = document.createElement("div");
-    footer.className = "card-footer";
+    const contactBlock = document.createElement("div");
+    contactBlock.className = "info-block block-contact";
 
-    const footerText = document.createElement("span");
-    footerText.className = "card-footer-text";
-    footerText.textContent = "查看完整名片";
+    const contactHeader = document.createElement("div");
+    contactHeader.className = "block-header";
+    const cIcon = document.createElement("span");
+    cIcon.className = "block-icon";
+    cIcon.textContent = "📡";
+    const cTitle = document.createElement("span");
+    cTitle.className = "block-title";
+    cTitle.textContent = "联系方式";
+    contactHeader.appendChild(cIcon);
+    contactHeader.appendChild(cTitle);
 
-    const footerArrow = document.createElement("span");
-    footerArrow.className = "card-footer-arrow";
-    footerArrow.textContent = "→";
+    const contactBody = document.createElement("div");
+    contactBody.className = "block-body";
+    const grid = document.createElement("div");
+    grid.className = "contact-grid";
 
-    footer.appendChild(footerText);
-    footer.appendChild(footerArrow);
-
-    // 组装
-    card.appendChild(header);
-    card.appendChild(contacts);
-    card.appendChild(bio);
-    card.appendChild(footer);
-
-    const refs = {
-        avatar,
-        nameEl,
-        jobEl,
-        idEl,
-        contactRefs,
-        bioText,
-    };
-
-    return { el: card, refs };
-}
-
-function updateCard(entry, user) {
-    const { refs } = entry;
-    const hiddenFields = normalizeHiddenFields(user.hidden_fields);
-    const isOwner = user.id === currentUserId;
-    const shouldHideField = (field) => hiddenFields.includes(field) && !isOwner;
-
-    // 头像
-    const newAvatar = getAvatarUrl(user.avatar);
-    if (newAvatar) {
-        if (refs.avatar.src !== newAvatar) {
-            refs.avatar.src = newAvatar;
-            refs.avatar.style.background = "";
-        }
-    } else {
-        refs.avatar.src = "";
-        refs.avatar.style.background = "rgba(255,255,255,0.05)";
-    }
-
-    // 姓名
-    const newName = shouldHideField('name') ? "已隐藏" : (user.name || "未命名");
-    if (refs.nameEl.textContent !== newName) {
-        refs.nameEl.textContent = newName;
-    }
-    refs.nameEl.style.opacity = shouldHideField('name') ? "0.5" : "1";
-
-    // 职位
-    const newJob = shouldHideField('job') ? "已隐藏" : (user.job || "暂无职位");
-    if (refs.jobEl.textContent !== newJob) {
-        refs.jobEl.textContent = newJob;
-    }
-    refs.jobEl.style.opacity = shouldHideField('job') ? "0.5" : "1";
-
-    // ID
-    const newId = "ID: " + truncate(user.id, 12);
-    if (refs.idEl.textContent !== newId) {
-        refs.idEl.textContent = newId;
-    }
-
-    // 联系方式
     const contactDefs = [
-        { key: "phone", icon: "📞", label: "电话" },
-        { key: "email", icon: "✉️", label: "邮箱" },
-        { key: "github", icon: "💻", label: "GitHub" },
+        { key: "phone",  icon: "📞", label: "电话",   href: (v) => "tel:" + v },
+        { key: "email",  icon: "✉️", label: "邮箱",   href: (v) => "mailto:" + v },
+        { key: "github", icon: "💻", label: "GitHub", href: (v) => (v.startsWith("http") ? v : "https://" + v) },
     ];
+
     contactDefs.forEach(def => {
-        const ref = refs.contactRefs[def.key];
-        if(shouldHideField(def.key)) {
-            const displayVal = "已隐藏";
-            if(ref.value.textContent !== displayVal) {
-                ref.value.textContent = displayVal;
-            }
-            ref.item.classList.add("empty");
+        const box = document.createElement("a");
+        box.className = "contact-box";
+        const val = user[def.key];
+        const hidden = shouldHideField(def.key);
+
+        if (hidden) {
+            box.classList.add("disabled");
+            box.removeAttribute("href");
+        } else if (val && String(val).trim()) {
+            box.href = def.href(String(val).trim());
+            box.target = (def.key === 'github') ? "_blank" : "_self";
+            box.rel = "noopener noreferrer";
         } else {
-            const val = user[def.key];
-            const displayVal = val ? truncate(val, 16) : "未填写";
-            if(ref.value.textContent !== displayVal) {
-                ref.value.textContent = displayVal;
-            }
-            if(val) {
-                ref.item.classList.remove("empty");
-            } else {
-                ref.item.classList.add("empty");
-            }
+            box.classList.add("disabled");
+            box.removeAttribute("href");
         }
+
+        const ic = document.createElement("div");
+        ic.className = "contact-box-icon";
+        ic.textContent = def.icon;
+
+        const lb = document.createElement("div");
+        lb.className = "contact-box-label";
+        lb.textContent = def.label;
+
+        const vl = document.createElement("div");
+        vl.className = "contact-box-value";
+        if (hidden) {
+            vl.textContent = "已隐藏";
+        } else if (val && String(val).trim()) {
+            vl.textContent = truncate(String(val).trim(), 28);
+        } else {
+            vl.textContent = "未填写";
+        }
+
+        box.appendChild(ic);
+        box.appendChild(lb);
+        box.appendChild(vl);
+        grid.appendChild(box);
     });
 
-    // 简介
-    if(shouldHideField('intro')) {
-        const hiddenText = "该用户已隐藏个人介绍";
-        if(refs.bioText.textContent !== hiddenText) {
-            refs.bioText.textContent = hiddenText;
-            refs.bioText.classList.add("empty");
-        }
-    } else {
-        const intro = user.intro;
-        if(intro && String(intro).trim()) {
-            const newIntro = String(intro).trim();
-            if(refs.bioText.textContent !== newIntro) {
-                refs.bioText.textContent = newIntro;
-                refs.bioText.classList.remove("empty");
-            }
-        } else {
-            const emptyText = "这位用户还没有填写个人介绍...";
-            if(refs.bioText.textContent !== emptyText) {
-                refs.bioText.textContent = emptyText;
-                refs.bioText.classList.add("empty");
-            }
-        }
+    contactBody.appendChild(grid);
+    contactBlock.appendChild(contactHeader);
+    contactBlock.appendChild(contactBody);
+    main.appendChild(contactBlock);
+
+    if (isOwner) {
+        const actionBlock = document.createElement("div");
+        actionBlock.className = "info-block block-action";
+
+        const actHeader = document.createElement("div");
+        actHeader.className = "block-header";
+        const aIc = document.createElement("span");
+        aIc.className = "block-icon";
+        aIc.textContent = "⚙️";
+        const aTt = document.createElement("span");
+        aTt.className = "block-title";
+        aTt.textContent = "管理操作";
+        actHeader.appendChild(aIc);
+        actHeader.appendChild(aTt);
+
+        const actBody = document.createElement("div");
+        actBody.className = "action-body-compact";
+
+        const actions = [
+            { label: "✏️ 编辑资料",  cls: "primary",   click: () => { location.href = "profile.html"; } },
+            { label: "📇 名片广场",  cls: "secondary", click: () => { location.href = "users.html"; } },
+        ];
+
+        actions.forEach(ac => {
+            const row = document.createElement("div");
+            row.className = "action-mini-row";
+            const lb = document.createElement("span");
+            lb.className = "action-mini-label";
+            lb.textContent = "操作";
+            const btn = document.createElement("button");
+            btn.className = "action-mini-btn action-mini-btn-" + ac.cls;
+            btn.textContent = ac.label;
+            btn.onclick = ac.click;
+            row.appendChild(lb);
+            row.appendChild(btn);
+            actBody.appendChild(row);
+        });
+
+        actionBlock.appendChild(actHeader);
+        actionBlock.appendChild(actBody);
+        main.appendChild(actionBlock);
     }
 
-    entry.el.onclick = () => { location.href = "card.html?id=" + encodeURIComponent(user.id); };
+    const honorBlock = document.createElement("div");
+    honorBlock.className = "info-block";
+
+    const hdr = document.createElement("div");
+    hdr.className = "block-header";
+    const hi = document.createElement("span");
+    hi.className = "block-icon";
+    hi.textContent = "🏆";
+    const ht = document.createElement("span");
+    ht.className = "block-title";
+    ht.textContent = "荣誉展示";
+    hdr.appendChild(hi);
+    hdr.appendChild(ht);
+
+    const hBody = document.createElement("div");
+    hBody.className = "block-body";
+    hBody.style.paddingLeft = "12px";
+
+    const honorImages = parseHonorImages(user.honor_image);
+    const honorTextHidden = shouldHideField('honor_text');
+    const honorImgHidden = shouldHideField('honor_image');
+
+    let hasContent = false;
+
+    if (!honorTextHidden && user.honor_text && String(user.honor_text).trim()) {
+        const q = document.createElement("blockquote");
+        q.className = "quote-text";
+        q.style.margin = "0 0 16px 0";
+        q.style.paddingLeft = "16px";
+        q.style.borderLeft = "3px solid rgba(139,92,246,0.3)";
+        q.style.color = "rgba(255,255,255,0.6)";
+        q.style.lineHeight = "1.8";
+        q.textContent = String(user.honor_text).trim();
+        hBody.appendChild(q);
+        hasContent = true;
+    } else if (honorTextHidden) {
+        const q = document.createElement("blockquote");
+        q.className = "quote-text empty";
+        q.style.margin = "0 0 16px 0";
+        q.style.paddingLeft = "16px";
+        q.style.borderLeft = "3px solid rgba(139,92,246,0.3)";
+        q.textContent = "该用户已隐藏荣誉文字";
+        hBody.appendChild(q);
+    }
+
+    if (!honorImgHidden && honorImages.length > 0) {
+        const imgWrap = document.createElement("div");
+        imgWrap.className = "honor-grid";
+        honorImages.forEach(src => {
+            const img = document.createElement("img");
+            img.className = "honor-img";
+            img.src = src;
+            img.alt = "荣誉图片";
+            img.loading = "lazy";
+            img.onclick = () => window.open(src, "_blank");
+            img.onerror = function() { this.style.display = "none"; };
+            imgWrap.appendChild(img);
+        });
+        hBody.appendChild(imgWrap);
+        hasContent = true;
+    } else if (honorImgHidden) {
+        const p = document.createElement("p");
+        p.className = "quote-text empty";
+        p.style.fontStyle = "italic";
+        p.textContent = "该用户已隐藏荣誉图片";
+        hBody.appendChild(p);
+    }
+
+    if (!hasContent) {
+        const p = document.createElement("p");
+        p.className = "quote-text empty";
+        p.style.fontStyle = "italic";
+        p.textContent = "这位用户还没有添加荣誉信息~";
+        hBody.appendChild(p);
+    }
+
+    honorBlock.appendChild(hdr);
+    honorBlock.appendChild(hBody);
+    main.appendChild(honorBlock);
+
+    return main;
 }
 
-function render(data) {
-    if (!data) data = [];
-
-    const currentIds = new Set(data.map(u => u.id));
-
-    for (const [id, entry] of cardMap) {
-        if (!currentIds.has(id)) {
-            entry.el.remove();
-            cardMap.delete(id);
-        }
-    }
-
-    data.forEach((user, index) => {
-        const entry = cardMap.get(user.id);
-        const refNode = list.children[index] || null;
-
-        if (entry) {
-            updateCard(entry, user);
-            if (refNode !== entry.el) {
-                list.insertBefore(entry.el, refNode);
-            }
-        } else {
-            const newEntry = createCard(user, !isFirstLoad);
-            cardMap.set(user.id, newEntry);
-            if (refNode) {
-                list.insertBefore(newEntry.el, refNode);
-            } else {
-                list.appendChild(newEntry.el);
-            }
-        }
-    });
-
-    if (isFirstLoad && data.length === 0) {
-        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📇</div><div class="empty-state-text">还没有人创建名片，快去创建第一张吧！</div></div>';
-    }
-
-    isFirstLoad = false;
+function renderEmpty(text, icon = "📇") {
+    wrap.innerHTML =
+        '<div class="empty-state" style="width:100%;padding:80px 20px;text-align:center;">' +
+            '<div class="empty-state-icon" style="font-size:48px;margin-bottom:16px;opacity:0.3;">' + icon + '</div>' +
+            '<div class="empty-state-text" style="color:rgba(255,255,255,0.4);font-size:16px;">' + text + '</div>' +
+        '</div>';
 }
 
-async function fetchData() {
+async function bootstrap() {
+    const queryId = getQueryId();
     const { data: authData } = await supabase.auth.getUser();
-    currentUserId = authData.user ? authData.user.id : null;
-    
-    const { data, error } = await supabase
+    const currentUser = authData.user || null;
+
+    if (currentUser) {
+        logoutBtn.style.display = "inline-block";
+    }
+
+    let targetId = queryId || (currentUser ? currentUser.id : null);
+
+    if (!targetId) {
+        renderEmpty("请先<a href='login.html' style='color:#a78bfa;text-decoration:none;'>登录</a>查看你的名片，或从<a href='users.html' style='color:#a78bfa;text-decoration:none;'>名片广场</a>选择一张名片查看。", "🔒");
+        return;
+    }
+
+    const isOwner = currentUser && currentUser.id === targetId;
+
+    const { data: user, error } = await supabase
         .from("profiles")
-        .select("id, name, job, avatar, phone, email, github, intro, hidden_fields, is_hidden");
+        .select("*")
+        .eq("id", targetId)
+        .maybeSingle();
 
     if (error) {
-        console.error(error);
-        if (isFirstLoad) {
-            list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">加载失败: ' + error.message + '</div></div>';
+        renderEmpty("加载失败：" + error.message, "⚠️");
+        return;
+    }
+
+    if (!user) {
+        if (isOwner) {
+            renderEmpty("你还没有创建名片，<a href='profile.html' style='color:#a78bfa;text-decoration:none;'>点击这里填写资料</a>创建第一张吧！", "✨");
+        } else {
+            renderEmpty("该用户的名片不存在或已被删除", "❓");
         }
         return;
     }
 
-    allData = (data || []).filter(u => !(u.is_hidden === true || u.is_hidden === "true"));
-    
-    const keyword = document.getElementById("searchInput").value.toLowerCase().trim();
-    if (keyword) {
-        const filtered = allData.filter(u => 
-            (u.name || "").toLowerCase().includes(keyword) ||
-            (u.job || "").toLowerCase().includes(keyword)
-        );
-        render(filtered);
+    if (!isOwner && (user.is_hidden === true || user.is_hidden === "true")) {
+        renderEmpty("该用户已隐藏整张名片", "🙈");
+        return;
+    }
+
+    const hiddenFields = normalizeHiddenFields(user.hidden_fields);
+    const shouldHideField = (field) => hiddenFields.includes(field) && !isOwner;
+
+    wrap.innerHTML = "";
+    const sidebar = buildSidebar(user, isOwner, shouldHideField);
+    const main = buildMain(user, isOwner, shouldHideField);
+    wrap.appendChild(sidebar);
+    wrap.appendChild(main);
+
+    if (isOwner) {
+        document.title = (user.name ? user.name + " - " : "") + "我的电子名片";
     } else {
-        render(allData);
+        document.title = (user.name ? user.name + " - " : "") + "电子名片";
     }
 }
 
-fetchData();
-setInterval(fetchData, 8000);
+bootstrap();
 </script>
 
 </body>
