@@ -100,7 +100,10 @@ function renderHonorImages(honorData) {
             return;
         }
 
-        if(data.avatar){
+        const avatarEl = document.getElementById("avatar");
+        if(avatarEl && data.avatar){
+            avatarEl.src = data.avatar;
+        }
             document.getElementById("avatar").src = data.avatar;
         }
         document.getElementById("name").textContent = shouldHideField('name') ? "已隐藏" : (data.name || "未命名");
