@@ -1,3 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的电子名片</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="profile-body">
+
+<nav class="profile-nav">
+  <a href="users.html" class="nav-back">← 名片广场</a>
+  <span class="nav-title">电子名片</span>
+  <a href="#" class="nav-logout" id="logoutBtn" style="display:none;" onclick="doLogout(); return false;">退出登录</a>
+</nav>
+
+<div class="profile-wrap">
+  <aside class="profile-sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-avatar-wrap">
+        <img id="avatar" class="sidebar-avatar" src="" alt="头像">
+        <div class="sidebar-status"></div>
+      </div>
+      <h1 id="name" class="sidebar-name">加载中...</h1>
+      <p id="job" class="sidebar-job"></p>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-meta">
+        <div class="meta-row">
+          <span class="meta-label">用户 - ID</span>
+          <span class="meta-value" id="userId">—</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">注册时间</span>
+          <span class="meta-value" id="joinDate">—</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="profile-main">
+    <div class="welcome-bar" id="welcomeBar" style="display:none;">
+      <span class="welcome-icon">👋</span>
+      <span class="welcome-text" id="welcomeText">欢迎回来！</span>
+    </div>
+
+    <section class="info-block block-quote">
+      <div class="block-header">
+        <span class="block-icon">💬</span>
+        <span class="block-title">个人简介</span>
+      </div>
+      <div class="block-body">
+        <p id="intro" class="quote-text">这位用户还没有填写个人介绍...</p>
+      </div>
+    </section>
+
+    <section class="info-block block-quote" id="honorBlock" style="display:none;">
+      <div class="block-header">
+        <span class="block-icon">🏆</span>
+        <span class="block-title">个人荣誉</span>
+      </div>
+      <div class="block-body">
+        <p id="honorText" class="quote-text" style="display:none;"></p>
+        <div id="honorImgContainer"></div>
+      </div>
+    </section>
+
+    <section class="info-block block-contact">
+      <div class="block-header">
+        <span class="block-icon">📡</span>
+        <span class="block-title">联系方式</span>
+      </div>
+      <div class="block-body">
+        <div class="contact-grid">
+          <a id="phoneLink" class="contact-box" href="#">
+            <div class="contact-box-icon">📞</div>
+            <div class="contact-box-label">电话</div>
+            <div class="contact-box-value" id="phoneVal">未填写</div>
+          </a>
+          <a id="emailLink" class="contact-box" href="#">
+            <div class="contact-box-icon">✉️</div>
+            <div class="contact-box-label">邮箱</div>
+            <div class="contact-box-value" id="emailVal">未填写</div>
+          </a>
+          <a id="githubLink" class="contact-box" href="#">
+            <div class="contact-box-icon">💻</div>
+            <div class="contact-box-label">GitHub</div>
+            <div class="contact-box-value" id="githubVal">未填写</div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="info-block block-action" id="actionBlock" style="display:none;">
+      <div class="block-header">
+        <span class="block-icon">⚙️</span>
+        <span class="block-title">管理操作</span>
+      </div>
+      <div class="block-body action-body-compact">
+        <div class="action-mini-row">
+          <span class="action-mini-label">✏️ 编辑资料</span>
+          <button onclick="edit()" class="action-mini-btn action-mini-btn-primary">编辑</button>
+        </div>
+        <div class="action-mini-row">
+          <span class="action-mini-label">🔒 修改密码</span>
+          <button onclick="changePassword()" class="action-mini-btn action-mini-btn-secondary">修改</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="pwdModal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>🔐 修改密码</h3>
+    <input type="password" id="oldPwd" placeholder="请输入原密码">
+    <input type="password" id="newPwd" placeholder="请输入新密码">
+    <input type="password" id="confirmPwd" placeholder="确认新密码">
+    <div class="modal-buttons">
+      <button onclick="submitChangePassword()">确认修改</button>
+      <button class="secondary" onclick="closePwdModal()">取消</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { supabase } from "./supabase.js";
 
@@ -103,8 +227,6 @@ function renderHonorImages(honorData) {
         const avatarEl = document.getElementById("avatar");
         if(avatarEl && data.avatar){
             avatarEl.src = data.avatar;
-        }
-            document.getElementById("avatar").src = data.avatar;
         }
         document.getElementById("name").textContent = shouldHideField('name') ? "已隐藏" : (data.name || "未命名");
         if(shouldHideField('name')) document.getElementById("name").style.opacity = "0.5";
@@ -271,3 +393,5 @@ window.doLogout = async function(){
     location.href = "login.html";
 };
 </script>
+</body>
+</html>
