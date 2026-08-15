@@ -397,7 +397,7 @@ async function fetchData() {
         return;
     }
 
-    allData = (data || []).filter(u => !u.is_hidden);
+	allData = (data || []).filter(u => !(u.is_hidden === true || u.is_hidden === "true"));
     
     // 如果搜索框有内容，保持当前搜索结果
     const keyword = document.getElementById("searchInput").value.toLowerCase().trim();
@@ -408,7 +408,7 @@ async function fetchData() {
         );
         render(filtered);
     } else {
-        render(data);
+        render(allData);
     }
 }
 
