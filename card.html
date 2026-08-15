@@ -212,8 +212,12 @@ function renderHonorImages(honorData) {
             return;
         }
 	
-	const hiddenFields = data.hidden_fields || [];
-	const shouldHideField = (field) => hiddenFields.includes(field) && !isOwner;
+        // 先判断是不是主人
+        const { data: currentUser } = await supabase.auth.getUser();
+        isOwner = currentUser.user && currentUser.user.id === targetId;
+
+        const hiddenFields = data.hidden_fields || [];
+        const shouldHideField = (field) => hiddenFields.includes(field) && !isOwner;
 
         // 非主人访问已隐藏名片，直接拦截
         if((data.is_hidden === true || data.is_hidden === "true") && !isOwner){
