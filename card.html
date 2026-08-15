@@ -160,111 +160,192 @@ function buildMain(user, isOwner, shouldHideField) {
 
     const introBlock = document.createElement("div");
     introBlock.className = "info-block block-quote";
+    {
+        const introHeader = document.createElement("div");
+        introHeader.className = "block-header";
+        const introIcon = document.createElement("span");
+        introIcon.className = "block-icon";
+        introIcon.textContent = "💭";
+        const introTitle = document.createElement("span");
+        introTitle.className = "block-title";
+        introTitle.textContent = "个人简介";
+        introHeader.appendChild(introIcon);
+        introHeader.appendChild(introTitle);
 
-    const introHeader = document.createElement("div");
-    introHeader.className = "block-header";
-    const introIcon = document.createElement("span");
-    introIcon.className = "block-icon";
-    introIcon.textContent = "💭";
-    const introTitle = document.createElement("span");
-    introTitle.className = "block-title";
-    introTitle.textContent = "个人简介";
-    introHeader.appendChild(introIcon);
-    introHeader.appendChild(introTitle);
+        const introBody = document.createElement("div");
+        introBody.className = "block-body";
+        const introText = document.createElement("p");
+        introText.className = "quote-text";
+        if (shouldHideField('intro')) {
+            introText.classList.add("empty");
+            introText.textContent = "该用户已隐藏个人介绍";
+        } else if (user.intro && String(user.intro).trim()) {
+            introText.textContent = String(user.intro).trim();
+        } else {
+            introText.classList.add("empty");
+            introText.textContent = "这位用户还没有填写个人介绍~";
+        }
+        introBody.appendChild(introText);
 
-    const introBody = document.createElement("div");
-    introBody.className = "block-body";
-    const introText = document.createElement("p");
-    introText.className = "quote-text";
-    if (shouldHideField('intro')) {
-        introText.classList.add("empty");
-        introText.textContent = "该用户已隐藏个人介绍";
-    } else if (user.intro && String(user.intro).trim()) {
-        introText.textContent = String(user.intro).trim();
-    } else {
-        introText.classList.add("empty");
-        introText.textContent = "这位用户还没有填写个人介绍~";
+        introBlock.appendChild(introHeader);
+        introBlock.appendChild(introBody);
     }
-    introBody.appendChild(introText);
 
-    introBlock.appendChild(introHeader);
-    introBlock.appendChild(introBody);
-    main.appendChild(introBlock);
+    const honorBlock = document.createElement("div");
+    honorBlock.className = "info-block";
+    {
+        const hdr = document.createElement("div");
+        hdr.className = "block-header";
+        const hi = document.createElement("span");
+        hi.className = "block-icon";
+        hi.textContent = "🏆";
+        const ht = document.createElement("span");
+        ht.className = "block-title";
+        ht.textContent = "荣誉展示";
+        hdr.appendChild(hi);
+        hdr.appendChild(ht);
+
+        const hBody = document.createElement("div");
+        hBody.className = "block-body";
+        hBody.style.paddingLeft = "12px";
+
+        const honorImages = parseHonorImages(user.honor_image);
+        const honorTextHidden = shouldHideField('honor_text');
+        const honorImgHidden = shouldHideField('honor_image');
+
+        let hasContent = false;
+
+        if (!honorTextHidden && user.honor_text && String(user.honor_text).trim()) {
+            const q = document.createElement("blockquote");
+            q.className = "quote-text";
+            q.style.margin = "0 0 16px 0";
+            q.style.paddingLeft = "16px";
+            q.style.borderLeft = "3px solid rgba(139,92,246,0.3)";
+            q.style.color = "rgba(255,255,255,0.6)";
+            q.style.lineHeight = "1.8";
+            q.textContent = String(user.honor_text).trim();
+            hBody.appendChild(q);
+            hasContent = true;
+        } else if (honorTextHidden) {
+            const q = document.createElement("blockquote");
+            q.className = "quote-text empty";
+            q.style.margin = "0 0 16px 0";
+            q.style.paddingLeft = "16px";
+            q.style.borderLeft = "3px solid rgba(139,92,246,0.3)";
+            q.textContent = "该用户已隐藏荣誉文字";
+            hBody.appendChild(q);
+        }
+
+        if (!honorImgHidden && honorImages.length > 0) {
+            const imgWrap = document.createElement("div");
+            imgWrap.className = "honor-grid";
+            honorImages.forEach(src => {
+                const img = document.createElement("img");
+                img.className = "honor-img";
+                img.src = src;
+                img.alt = "荣誉图片";
+                img.loading = "lazy";
+                img.onclick = () => window.open(src, "_blank");
+                img.onerror = function() { this.style.display = "none"; };
+                imgWrap.appendChild(img);
+            });
+            hBody.appendChild(imgWrap);
+            hasContent = true;
+        } else if (honorImgHidden) {
+            const p = document.createElement("p");
+            p.className = "quote-text empty";
+            p.style.fontStyle = "italic";
+            p.textContent = "该用户已隐藏荣誉图片";
+            hBody.appendChild(p);
+        }
+
+        if (!hasContent) {
+            const p = document.createElement("p");
+            p.className = "quote-text empty";
+            p.style.fontStyle = "italic";
+            p.textContent = "这位用户还没有添加荣誉信息~";
+            hBody.appendChild(p);
+        }
+
+        honorBlock.appendChild(hdr);
+        honorBlock.appendChild(hBody);
+    }
 
     const contactBlock = document.createElement("div");
     contactBlock.className = "info-block block-contact";
+    {
+        const contactHeader = document.createElement("div");
+        contactHeader.className = "block-header";
+        const cIcon = document.createElement("span");
+        cIcon.className = "block-icon";
+        cIcon.textContent = "📡";
+        const cTitle = document.createElement("span");
+        cTitle.className = "block-title";
+        cTitle.textContent = "联系方式";
+        contactHeader.appendChild(cIcon);
+        contactHeader.appendChild(cTitle);
 
-    const contactHeader = document.createElement("div");
-    contactHeader.className = "block-header";
-    const cIcon = document.createElement("span");
-    cIcon.className = "block-icon";
-    cIcon.textContent = "📡";
-    const cTitle = document.createElement("span");
-    cTitle.className = "block-title";
-    cTitle.textContent = "联系方式";
-    contactHeader.appendChild(cIcon);
-    contactHeader.appendChild(cTitle);
+        const contactBody = document.createElement("div");
+        contactBody.className = "block-body";
+        const grid = document.createElement("div");
+        grid.className = "contact-grid";
 
-    const contactBody = document.createElement("div");
-    contactBody.className = "block-body";
-    const grid = document.createElement("div");
-    grid.className = "contact-grid";
+        const contactDefs = [
+            { key: "phone",  icon: "📞", label: "电话",   href: (v) => "tel:" + v },
+            { key: "email",  icon: "✉️", label: "邮箱",   href: (v) => "mailto:" + v },
+            { key: "github", icon: "💻", label: "GitHub", href: (v) => (v.startsWith("http") ? v : "https://" + v) },
+        ];
 
-    const contactDefs = [
-        { key: "phone",  icon: "📞", label: "电话",   href: (v) => "tel:" + v },
-        { key: "email",  icon: "✉️", label: "邮箱",   href: (v) => "mailto:" + v },
-        { key: "github", icon: "💻", label: "GitHub", href: (v) => (v.startsWith("http") ? v : "https://" + v) },
-    ];
+        contactDefs.forEach(def => {
+            const box = document.createElement("a");
+            box.className = "contact-box";
+            const val = user[def.key];
+            const hidden = shouldHideField(def.key);
 
-    contactDefs.forEach(def => {
-        const box = document.createElement("a");
-        box.className = "contact-box";
-        const val = user[def.key];
-        const hidden = shouldHideField(def.key);
+            if (hidden) {
+                box.classList.add("disabled");
+                box.removeAttribute("href");
+            } else if (val && String(val).trim()) {
+                box.href = def.href(String(val).trim());
+                box.target = (def.key === 'github') ? "_blank" : "_self";
+                box.rel = "noopener noreferrer";
+            } else {
+                box.classList.add("disabled");
+                box.removeAttribute("href");
+            }
 
-        if (hidden) {
-            box.classList.add("disabled");
-            box.removeAttribute("href");
-        } else if (val && String(val).trim()) {
-            box.href = def.href(String(val).trim());
-            box.target = (def.key === 'github') ? "_blank" : "_self";
-            box.rel = "noopener noreferrer";
-        } else {
-            box.classList.add("disabled");
-            box.removeAttribute("href");
-        }
+            const ic = document.createElement("div");
+            ic.className = "contact-box-icon";
+            ic.textContent = def.icon;
 
-        const ic = document.createElement("div");
-        ic.className = "contact-box-icon";
-        ic.textContent = def.icon;
+            const lb = document.createElement("div");
+            lb.className = "contact-box-label";
+            lb.textContent = def.label;
 
-        const lb = document.createElement("div");
-        lb.className = "contact-box-label";
-        lb.textContent = def.label;
+            const vl = document.createElement("div");
+            vl.className = "contact-box-value";
+            if (hidden) {
+                vl.textContent = "已隐藏";
+            } else if (val && String(val).trim()) {
+                vl.textContent = truncate(String(val).trim(), 28);
+            } else {
+                vl.textContent = "未填写";
+            }
 
-        const vl = document.createElement("div");
-        vl.className = "contact-box-value";
-        if (hidden) {
-            vl.textContent = "已隐藏";
-        } else if (val && String(val).trim()) {
-            vl.textContent = truncate(String(val).trim(), 28);
-        } else {
-            vl.textContent = "未填写";
-        }
+            box.appendChild(ic);
+            box.appendChild(lb);
+            box.appendChild(vl);
+            grid.appendChild(box);
+        });
 
-        box.appendChild(ic);
-        box.appendChild(lb);
-        box.appendChild(vl);
-        grid.appendChild(box);
-    });
+        contactBody.appendChild(grid);
+        contactBlock.appendChild(contactHeader);
+        contactBlock.appendChild(contactBody);
+    }
 
-    contactBody.appendChild(grid);
-    contactBlock.appendChild(contactHeader);
-    contactBlock.appendChild(contactBody);
-    main.appendChild(contactBlock);
-
+    let actionBlock = null;
     if (isOwner) {
-        const actionBlock = document.createElement("div");
+        actionBlock = document.createElement("div");
         actionBlock.className = "info-block block-action";
 
         const actHeader = document.createElement("div");
@@ -303,88 +384,12 @@ function buildMain(user, isOwner, shouldHideField) {
 
         actionBlock.appendChild(actHeader);
         actionBlock.appendChild(actBody);
-        main.appendChild(actionBlock);
     }
 
-    const honorBlock = document.createElement("div");
-    honorBlock.className = "info-block";
-
-    const hdr = document.createElement("div");
-    hdr.className = "block-header";
-    const hi = document.createElement("span");
-    hi.className = "block-icon";
-    hi.textContent = "🏆";
-    const ht = document.createElement("span");
-    ht.className = "block-title";
-    ht.textContent = "荣誉展示";
-    hdr.appendChild(hi);
-    hdr.appendChild(ht);
-
-    const hBody = document.createElement("div");
-    hBody.className = "block-body";
-    hBody.style.paddingLeft = "12px";
-
-    const honorImages = parseHonorImages(user.honor_image);
-    const honorTextHidden = shouldHideField('honor_text');
-    const honorImgHidden = shouldHideField('honor_image');
-
-    let hasContent = false;
-
-    if (!honorTextHidden && user.honor_text && String(user.honor_text).trim()) {
-        const q = document.createElement("blockquote");
-        q.className = "quote-text";
-        q.style.margin = "0 0 16px 0";
-        q.style.paddingLeft = "16px";
-        q.style.borderLeft = "3px solid rgba(139,92,246,0.3)";
-        q.style.color = "rgba(255,255,255,0.6)";
-        q.style.lineHeight = "1.8";
-        q.textContent = String(user.honor_text).trim();
-        hBody.appendChild(q);
-        hasContent = true;
-    } else if (honorTextHidden) {
-        const q = document.createElement("blockquote");
-        q.className = "quote-text empty";
-        q.style.margin = "0 0 16px 0";
-        q.style.paddingLeft = "16px";
-        q.style.borderLeft = "3px solid rgba(139,92,246,0.3)";
-        q.textContent = "该用户已隐藏荣誉文字";
-        hBody.appendChild(q);
-    }
-
-    if (!honorImgHidden && honorImages.length > 0) {
-        const imgWrap = document.createElement("div");
-        imgWrap.className = "honor-grid";
-        honorImages.forEach(src => {
-            const img = document.createElement("img");
-            img.className = "honor-img";
-            img.src = src;
-            img.alt = "荣誉图片";
-            img.loading = "lazy";
-            img.onclick = () => window.open(src, "_blank");
-            img.onerror = function() { this.style.display = "none"; };
-            imgWrap.appendChild(img);
-        });
-        hBody.appendChild(imgWrap);
-        hasContent = true;
-    } else if (honorImgHidden) {
-        const p = document.createElement("p");
-        p.className = "quote-text empty";
-        p.style.fontStyle = "italic";
-        p.textContent = "该用户已隐藏荣誉图片";
-        hBody.appendChild(p);
-    }
-
-    if (!hasContent) {
-        const p = document.createElement("p");
-        p.className = "quote-text empty";
-        p.style.fontStyle = "italic";
-        p.textContent = "这位用户还没有添加荣誉信息~";
-        hBody.appendChild(p);
-    }
-
-    honorBlock.appendChild(hdr);
-    honorBlock.appendChild(hBody);
+    main.appendChild(introBlock);
     main.appendChild(honorBlock);
+    main.appendChild(contactBlock);
+    if (actionBlock) main.appendChild(actionBlock);
 
     return main;
 }
