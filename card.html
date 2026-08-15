@@ -194,7 +194,7 @@ function renderHonorImages(honorData) {
             const { data: userData } = await supabase.auth.getUser();
             if(!userData.user){
                 alert("请先登录");
-                location.href = "index.html";
+                location.href = "login.html";
                 return;
             }
             targetId = userData.user.id;
@@ -363,13 +363,13 @@ window.submitChangePassword = async function(){
     } else {
         alert("密码修改成功，请重新登录");
         await supabase.auth.signOut();
-        location.href = "index.html";
+        location.href = "login.html";
     }
 };
 
 window.doLogout = async function(){
     await supabase.auth.signOut();
-    location.href = "index.html";
+    location.href = "login.html";
 };
 </script>
 </body>

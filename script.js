@@ -25,7 +25,7 @@ window.register = async () => {
     }
     else{
         alert("注册成功！请前往邮箱查收确认邮件，点击链接激活账号后再登录");
-        location.href="index.html";
+        location.href="login.html";
     }
 }
 
@@ -61,7 +61,7 @@ window.saveProfile = async function(){
 
     if(!userData.user){
         alert("请先登录");
-        location.href="index.html";
+        location.href="login.html";
         return;
     }
 

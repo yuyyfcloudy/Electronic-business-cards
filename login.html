@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电子名片登录</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+/* ========== 登录页分步入场动画 ========== */
+
+/* 左侧欢迎区：先出现 */
+.login-welcome {
+    animation: fadeInLeft 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s backwards;
+}
+
+/* 右侧登录面板：后出现 */
+.login-panel {
+    animation: fadeInRight 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.9s backwards;
+}
+
+/* 登录表单内元素依次出现 */
+.login-box h2 {
+    animation: fadeInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.1s backwards;
+}
+.login-sub {
+    animation: fadeInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.25s backwards;
+}
+.login-field:nth-child(1) {
+    animation: fadeInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.4s backwards;
+}
+.login-field:nth-child(2) {
+    animation: fadeInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.55s backwards;
+}
+.login-btn {
+    animation: fadeInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.7s backwards;
+}
+.login-links {
+    animation: fadeIn 0.6s ease 1.9s backwards;
+}
+
+/* 左侧内容依次出现 */
+.login-brand {
+    animation: fadeInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s backwards;
+}
+.login-title {
+    animation: fadeInUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.45s backwards;
+}
+.login-quote {
+    animation: fadeInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.65s backwards;
+}
+.feature-item:nth-child(1) {
+    animation: fadeInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.85s backwards;
+}
+.feature-item:nth-child(2) {
+    animation: fadeInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.0s backwards;
+}
+.feature-item:nth-child(3) {
+    animation: fadeInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 1.15s backwards;
+}
+
+/* 中间分隔线特效：从中间向两边展开 */
+.login-wrap {
+    position: relative;
+}
+
+.login-divider {
+    position: absolute;
+    left: 50%;
+    top: 15%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 0;
+    background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.25), transparent);
+    animation: dividerGrow 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.7s forwards;
+    pointer-events: none;
+}
+
+@keyframes dividerGrow {
+    to { height: 70%; }
+}
+
+@keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 移动端隐藏分隔线 */
+@media (max-width: 900px) {
+    .login-divider { display: none; }
+}
+</style>
+<base target="_blank">
+<base target="_blank">
+</head>
+<body class="login-body">
+
+<!-- 动态背景粒子 -->
+<div class="login-bg" id="loginBg"></div>
+
+<div class="login-wrap">
+  <div class="login-divider"></div>
+  <!-- 左侧：欢迎语 -->
+  <div class="login-welcome">
+    <div class="login-brand">📇 电子名片系统</div>
+    <h1 class="login-title">连接<br>每一次相遇</h1>
+    <div class="login-quote" id="loginQuote">
+      <span class="quote-mark">"</span>
+      <span id="quoteText">欢迎回来，你的名片已经等不及要见人了</span>
+      <span class="quote-mark">"</span>
+    </div>
+    <div class="login-features">
+      <div class="feature-item">
+        <span class="feature-icon">⚡</span>
+        <span>3 秒创建名片</span>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🌐</span>
+        <span>随时随地分享</span>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🔒</span>
+        <span>数据安全加密</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧：登录表单 -->
+  <div class="login-panel">
+    <div class="login-box">
+      <h2>欢迎登录</h2>
+      <p class="login-sub">输入账号，开启你的数字身份</p>
+
+      <div class="login-field">
+        <label>邮箱地址</label>
+        <input id="email" type="email" placeholder="name@example.com">
+      </div>
+
+      <div class="login-field">
+        <label>密码</label>
+        <input id="password" type="password" placeholder="请输入密码">
+      </div>
+
+      <button onclick="login()" class="login-btn">登 录</button>
+
+      <div class="login-links">
+        <span>还没有账号？<a href="register.html">立即注册</a></span>
+        <a href="users.html">📇 名片广场</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="script.js"></script>
+<script>
+// 幽默欢迎语轮播
+const quotes = [
+  "欢迎回来，你的名片已经等不及要见人了",
+  "登录成功 = 名片上线 = 人生开挂",
+  "这里没有验证码，只有你的帅气/美丽",
+  "你的电子名片，比你更懂社交",
+  "忘记密码？不，你忘不了自己的优秀",
+  "今日已登录 0 人，你是第一个！（大概）",
+  "别让名片空着，就像别让冰箱空着一样",
+  "每一次登录，都是一次自我展示的机会",
+  "你的名片，比你先一步认识新朋友",
+  "输入密码，解锁你的数字人生"
+];
+
+let qIdx = 0;
+const quoteText = document.getElementById("quoteText");
+
+function rotateQuote() {
+  quoteText.style.opacity = 0;
+  setTimeout(() => {
+    qIdx = (qIdx + 1) % quotes.length;
+    quoteText.textContent = quotes[qIdx];
+    quoteText.style.opacity = 1;
+  }, 400);
+}
+
+setInterval(rotateQuote, 5000);
+
+// 背景粒子
+const bg = document.getElementById("loginBg");
+for (let i = 0; i < 40; i++) {
+  const dot = document.createElement("div");
+  dot.className = "login-dot";
+  dot.style.left = Math.random() * 100 + "%";
+  dot.style.top = Math.random() * 100 + "%";
+  dot.style.width = (Math.random() * 3 + 1) + "px";
+  dot.style.height = dot.style.width;
+  dot.style.animationDuration = (Math.random() * 15 + 10) + "s";
+  dot.style.animationDelay = (Math.random() * 10) + "s";
+  bg.appendChild(dot);
+}
+</script>
+</body>
+</html>
