@@ -67,6 +67,113 @@ window.doLogout = async function() {
     location.href = "login.html";
 };
 
+window.openChangePasswordModal = function() {
+    const old = document.getElementById("cpModal");
+    if (old) old.remove();
+
+    const overlay = document.createElement("div");
+    overlay.id = "cpModal";
+    overlay.className = "modal-overlay";
+    overlay.style.display = "flex";
+    overlay.onclick = (e) => { if (e.target === overlay) closeChangePasswordModal(); };
+
+    const content = document.createElement("div");
+    content.className = "modal-content";
+
+    const title = document.createElement("h3");
+    title.textContent = "修改密码";
+    content.appendChild(title);
+
+    const oldPwd = document.createElement("input");
+    oldPwd.type = "password";
+    oldPwd.placeholder = "当前密码";
+    oldPwd.id = "cpOld";
+    content.appendChild(oldPwd);
+
+    const newPwd = document.createElement("input");
+    newPwd.type = "password";
+    newPwd.placeholder = "新密码（至少6位）";
+    newPwd.id = "cpNew";
+    content.appendChild(newPwd);
+
+    const confirmPwd = document.createElement("input");
+    confirmPwd.type = "password";
+    confirmPwd.placeholder = "确认新密码";
+    confirmPwd.id = "cpConfirm";
+    content.appendChild(confirmPwd);
+
+    const btns = document.createElement("div");
+    btns.className = "modal-buttons";
+
+    const cancel = document.createElement("button");
+    cancel.className = "secondary";
+    cancel.textContent = "取消";
+    cancel.onclick = closeChangePasswordModal;
+
+    const ok = document.createElement("button");
+    ok.textContent = "确认修改";
+    ok.onclick = doChangePassword;
+
+    btns.appendChild(cancel);
+    btns.appendChild(ok);
+    content.appendChild(btns);
+    overlay.appendChild(content);
+    document.body.appendChild(overlay);
+};
+
+window.closeChangePasswordModal = function() {
+    const m = document.getElementById("cpModal");
+    if (m) m.remove();
+};
+
+window.doChangePassword = async function() {
+    const oldVal = document.getElementById("cpOld").value;
+    const newVal = document.getElementById("cpNew").value;
+    const confirmVal = document.getElementById("cpConfirm").value;
+
+    if (!oldVal || !newVal || !confirmVal) {
+        alert("请填写完整的密码信息");
+        return;
+    }
+    if (newVal.length < 6) {
+        alert("新密码至少 6 位");
+        return;
+    }
+    if (newVal !== confirmVal) {
+        alert("两次输入的新密码不一致");
+        return;
+    }
+
+    const { data: userData } = await supabase.auth.getUser();
+    const email = userData && userData.user ? userData.user.email : null;
+    if (!email) {
+        alert("未获取到登录邮箱，请重新登录");
+        return;
+    }
+
+    const { error: reAuthError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: oldVal
+    });
+    if (reAuthError) {
+        alert("当前密码验证失败：" + reAuthError.message);
+        return;
+    }
+
+    const { error: updateError } = await supabase.auth.updateUser({
+        password: newVal
+    });
+    if (updateError) {
+        alert("密码修改失败：" + updateError.message);
+        return;
+    }
+
+    alert("密码修改成功！请使用新密码重新登录");
+    closeChangePasswordModal();
+    await supabase.auth.signOut();
+    location.href = "login.html";
+};
+
 function buildSidebar(user, isOwner, shouldHideField) {
     const aside = document.createElement("aside");
     aside.className = "profile-sidebar";
@@ -111,10 +218,6 @@ function buildSidebar(user, isOwner, shouldHideField) {
         { label: "用户 ID", value: truncate(user.id, 16) },
         { label: "名片身份", value: isOwner ? "本人名片" : "他人名片" },
     ];
-
-    if (!shouldHideField('name') && user.email) {
-        rows.push({ label: "账户邮箱", value: truncate(user.email, 24) });
-    }
 
     rows.forEach(r => {
         const row = document.createElement("div");
@@ -363,8 +466,8 @@ function buildMain(user, isOwner, shouldHideField) {
         actBody.className = "action-body-compact";
 
         const actions = [
-            { label: "✏️ 编辑资料",  cls: "primary",   click: () => { location.href = "profile.html"; } },
-            { label: "📇 名片广场",  cls: "secondary", click: () => { location.href = "users.html"; } },
+            { label: "✏️ 修改信息",  cls: "primary",   click: () => { location.href = "profile.html"; } },
+            { label: "🔒 修改密码",  cls: "secondary", click: () => { openChangePasswordModal(); } },
         ];
 
         actions.forEach(ac => {
