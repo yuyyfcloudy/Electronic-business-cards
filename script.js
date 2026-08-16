@@ -234,8 +234,8 @@ window.sendResetCode = async function() {
         return;
     }
 
-    alert("验证码已发送至邮箱，请查收（有效期 90 秒）");
-    resetCountdown = 90;
+    alert("验证码已发送至邮箱，请查收（有效期约 1 分钟）");
+    resetCountdown = 60;
     updateResetBtnState();
 
     resetTimer = setInterval(() => {
@@ -291,4 +291,84 @@ window.submitResetPassword = async function() {
 
     alert("✅ 密码重置成功！请使用新密码登录");
     showLoginForm();
+};
+
+/* =====================
+   全局导航栏通用函数
+   ===================== */
+
+window.updateNavUser = async function() {
+    const navAvatar = document.getElementById('navAvatar');
+    const navFallback = document.getElementById('navAvatarFallback');
+    const navText = document.getElementById('navUserText');
+    const dropdown = document.getElementById('userDropdown');
+    if(!navAvatar || !dropdown) return;
+
+    const { data: authData } = await supabase.auth.getUser();
+
+    if(authData.user) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('name, avatar')
+            .eq('id', authData.user.id)
+            .maybeSingle();
+
+        const name = profile?.name || authData.user.email?.split('@')[0] || '用户';
+        if(navText) navText.textContent = name;
+
+        if(profile?.avatar) {
+            navAvatar.src = profile.avatar;
+            navAvatar.style.display = 'block';
+            if(navFallback) navFallback.style.display = 'none';
+        } else {
+            if(navFallback) {
+                navFallback.textContent = name.charAt(0).toUpperCase();
+                navFallback.style.display = 'flex';
+            }
+            navAvatar.style.display = 'none';
+        }
+        dropdown.innerHTML = `
+            <a href="card.html">我的名片</a>
+            <a href="profile.html">编辑资料</a>
+            <div class="dropdown-divider"></div>
+            <a href="#" onclick="doNavLogout(); return false;">退出登录</a>
+        `;
+    } else {
+        if(navText) navText.textContent = '登录';
+        if(navFallback) {
+            navFallback.textContent = '👤';
+            navFallback.style.display = 'flex';
+        }
+        navAvatar.style.display = 'none';
+        dropdown.innerHTML = `
+            <a href="login.html">登录账号</a>
+            <a href="register.html">注册账号</a>
+        `;
+    }
+};
+
+window.toggleUserMenu = function(e) {
+    if(e) e.stopPropagation();
+    const d = document.getElementById('userDropdown');
+    if(d) d.classList.toggle('show');
+};
+
+document.addEventListener('click', function() {
+    const d = document.getElementById('userDropdown');
+    if(d) d.classList.remove('show');
+});
+
+window.goToMyCard = async function() {
+    const { data } = await supabase.auth.getUser();
+    if(data.user) {
+        location.href = 'card.html';
+    } else {
+        sessionStorage.setItem('returnUrl', 'card.html');
+        location.href = 'login.html';
+    }
+};
+
+window.doNavLogout = async function() {
+    await supabase.auth.signOut();
+    location.href = 'home.html';
 };

@@ -33,6 +33,11 @@
 <script type="module">
 import { supabase } from "./supabase.js";
 
+// 导航栏状态
+(async function initNav(){
+  if(window.updateNavUser) await window.updateNavUser();
+})();
+
 const list = document.getElementById("userList");
 let currentUserId = null;
 let allData = [];
@@ -426,5 +431,6 @@ fetchData();
 setInterval(fetchData, 8000);
 </script>
 
+<script type="module" src="script.js"></script>
 </body>
 </html>

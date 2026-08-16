@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电子名片系统 - 首页</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ========== 统一导航栏 ========== */
+.top-nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    background: rgba(12, 14, 27, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    height: 64px;
+}
+.nav-logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: #f1f5f9;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: -0.3px;
+}
+.nav-menu {
+    display: flex;
+    gap: 8px;
+}
+.nav-link {
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+.nav-link:hover, .nav-link.active {
+    color: #a78bfa;
+    background: rgba(167, 139, 250, 0.08);
+}
+.nav-user {
+    position: relative;
+}
+.avatar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+.avatar-wrap:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+.nav-avatar-img {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    display: none;
+}
+.nav-avatar-fallback {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(139, 92, 246, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    border: 2px solid rgba(139, 92, 246, 0.2);
+}
+.nav-user-text {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.user-dropdown {
+    position: absolute;
+    top: 56px; right: 0;
+    background: rgba(26, 29, 58, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 8px;
+    min-width: 160px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+.user-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.user-dropdown a {
+    display: block;
+    padding: 10px 16px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 10px;
+    transition: all 0.2s;
+}
+.user-dropdown a:hover {
+    background: rgba(167, 139, 250, 0.1);
+    color: #a78bfa;
+}
+.dropdown-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    margin: 8px;
+}
+
+/* ========== 首页主体 ========== */
+.home-body {
+    background: linear-gradient(180deg, #0c0e1b 0%, #12142b 40%, #0d0f20 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding-top: 64px;
+}
+.hero {
+    text-align: center;
+    padding: 100px 20px 80px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+.hero h1 {
+    font-size: 56px;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin: 0 0 20px;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, #c4b5fd, #a78bfa, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero > p {
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.4);
+    margin: 0 0 40px;
+    line-height: 1.6;
+}
+.hero-btns {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.btn-primary-lg {
+    padding: 14px 36px;
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: white;
+    border-radius: 14px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+}
+.btn-primary-lg:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(124, 58, 237, 0.4);
+}
+.btn-secondary-lg {
+    padding: 14px 36px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 14px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s;
+    display: inline-block;
+}
+.btn-secondary-lg:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(167, 139, 250, 0.3);
+    color: #a78bfa;
+}
+
+.section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 40px;
+}
+.section-title {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin: 0 0 48px;
+}
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+.feature-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 36px 28px;
+    text-align: center;
+    transition: all 0.4s ease;
+}
+.feature-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(167, 139, 250, 0.15);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.feature-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+}
+.feature-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin: 0 0 10px;
+}
+.feature-card p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.4);
+    margin: 0;
+    line-height: 1.6;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+.preview-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.preview-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(167, 139, 250, 0.2);
+}
+.preview-avatar {
+    width: 64px; height: 64px;
+    border-radius: 16px;
+    object-fit: cover;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.preview-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin: 0 0 4px;
+}
+.preview-job {
+    font-size: 13px;
+    color: #a78bfa;
+    margin: 0;
+}
+.btn-ghost {
+    display: inline-block;
+    margin-top: 40px;
+    padding: 12px 32px;
+    color: rgba(167, 139, 250, 0.8);
+    text-decoration: none;
+    font-weight: 500;
+    border: 1px solid rgba(167, 139, 250, 0.2);
+    border-radius: 12px;
+    transition: all 0.3s;
+}
+.btn-ghost:hover {
+    background: rgba(167, 139, 250, 0.08);
+    color: #a78bfa;
+}
+
+.home-footer {
+    text-align: center;
+    padding: 40px;
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 13px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+@media (max-width: 900px) {
+    .feature-grid { grid-template-columns: 1fr; }
+    .preview-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero h1 { font-size: 36px; }
+    .nav-inner { padding: 0 20px; }
+    .nav-menu { display: none; }
+}
+</style>
+</head>
+<body class="home-body">
+
+<!-- 导航栏 -->
+<nav class="top-nav">
+  <div class="nav-inner">
+    <a href="home.html" class="nav-logo">📇 电子名片</a>
+    <div class="nav-menu">
+      <a href="home.html" class="nav-link active">首页</a>
+      <a href="users.html" class="nav-link">名片广场</a>
+      <a href="#" class="nav-link" onclick="goToMyCard(); return false;">个人名片</a>
+    </div>
+    <div class="nav-user" id="navUser">
+      <div class="avatar-wrap" onclick="toggleUserMenu(event)">
+        <img id="navAvatar" class="nav-avatar-img" src="" alt="">
+        <div id="navAvatarFallback" class="nav-avatar-fallback">👤</div>
+        <span class="nav-user-text" id="navUserText">登录</span>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <a href="card.html">我的名片</a>
+        <a href="profile.html">编辑资料</a>
+        <div class="dropdown-divider"></div>
+        <a href="#" onclick="doLogout(); return false;">退出登录</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <h1>连接每一次相遇</h1>
+  <p>3 秒创建专属电子名片，让专业形象触手可及</p>
+  <div class="hero-btns">
+    <a href="register.html" class="btn-primary-lg">立即创建名片</a>
+    <a href="users.html" class="btn-secondary-lg">浏览名片广场</a>
+  </div>
+</section>
+
+<!-- 功能特色 -->
+<section class="section">
+  <h2 class="section-title">为什么选择我们</h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>极速创建</h3>
+      <p>填写信息即可生成精美名片，无需设计基础</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>隐私可控</h3>
+      <p>自由设置信息可见度，名片广场中隐藏敏感内容</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <h3>随时分享</h3>
+      <p>链接即名片，手机电脑都能看，社交从未如此简单</p>
+    </div>
+  </div>
+</section>
+
+<!-- 最新名片 -->
+<section class="section">
+  <h2 class="section-title">最新名片</h2>
+  <div class="preview-grid" id="previewGrid">
+    <div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.3);padding:40px;">加载中...</div>
+  </div>
+  <div style="text-align:center;">
+    <a href="users.html" class="btn-ghost">查看全部名片 →</a>
+  </div>
+</section>
+
+<div class="home-footer">📇 电子名片系统 · 让每一次相遇都有价值</div>
+
+<script type="module">
+import { supabase } from './supabase.js';
+
+// 更新导航栏用户状态
+async function updateNavUser() {
+  const { data: authData } = await supabase.auth.getUser();
+  const avatarImg = document.getElementById('navAvatar');
+  const avatarFallback = document.getElementById('navAvatarFallback');
+  const userText = document.getElementById('navUserText');
+  const dropdown = document.getElementById('userDropdown');
+
+  if (authData.user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name, avatar')
+      .eq('id', authData.user.id)
+      .maybeSingle();
+
+    const name = profile?.name || authData.user.email?.split('@')[0] || '用户';
+    userText.textContent = name;
+
+    if (profile?.avatar) {
+      avatarImg.src = profile.avatar;
+      avatarImg.style.display = 'block';
+      avatarFallback.style.display = 'none';
+    } else {
+      avatarFallback.textContent = name.charAt(0).toUpperCase();
+      avatarImg.style.display = 'none';
+      avatarFallback.style.display = 'flex';
+    }
+    // 已登录下拉菜单
+    dropdown.innerHTML = `
+      <a href="card.html">我的名片</a>
+      <a href="profile.html">编辑资料</a>
+      <div class="dropdown-divider"></div>
+      <a href="#" onclick="doLogout(); return false;">退出登录</a>
+    `;
+  } else {
+    userText.textContent = '登录';
+    avatarFallback.textContent = '👤';
+    avatarImg.style.display = 'none';
+    avatarFallback.style.display = 'flex';
+    // 未登录下拉菜单
+    dropdown.innerHTML = `
+      <a href="login.html">登录账号</a>
+      <a href="register.html">注册账号</a>
+    `;
+  }
+}
+
+// 下拉菜单切换
+window.toggleUserMenu = function(e) {
+  e.stopPropagation();
+  document.getElementById('userDropdown').classList.toggle('show');
+};
+
+document.addEventListener('click', () => {
+  document.getElementById('userDropdown').classList.remove('show');
+});
+
+// 去个人名片
+window.goToMyCard = async function() {
+  const { data } = await supabase.auth.getUser();
+  if (data.user) {
+    location.href = 'card.html';
+  } else {
+    sessionStorage.setItem('returnUrl', 'card.html');
+    location.href = 'login.html';
+  }
+};
+
+// 退出登录
+window.doLogout = async function() {
+  await supabase.auth.signOut();
+  location.href = 'home.html';
+};
+
+// 加载最新名片
+async function loadPreview() {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, name, job, avatar, is_hidden')
+    .eq('is_hidden', false)
+    .order('id', { ascending: false })
+    .limit(4);
+
+  const grid = document.getElementById('previewGrid');
+  if (error || !data || data.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:rgba(255,255,255,0.3);padding:40px;">还没有名片，快来创建第一张吧！</div>';
+    return;
+  }
+
+  grid.innerHTML = '';
+  data.forEach(user => {
+    const card = document.createElement('div');
+    card.className = 'preview-card';
+    card.onclick = () => location.href = 'card.html?id=' + user.id;
+
+    const img = document.createElement('img');
+    img.className = 'preview-avatar';
+    img.src = user.avatar || '';
+    img.alt = '';
+    img.onerror = function() { this.style.background = 'rgba(255,255,255,0.05)'; this.src = ''; };
+
+    const name = document.createElement('h4');
+    name.className = 'preview-name';
+    name.textContent = user.name || '未命名';
+
+    const job = document.createElement('p');
+    job.className = 'preview-job';
+    job.textContent = user.job || '暂无职位';
+
+    card.appendChild(img);
+    card.appendChild(name);
+    card.appendChild(job);
+    grid.appendChild(card);
+  });
+}
+
+updateNavUser();
+loadPreview();
+</script>
+
+</body>
+</html>
