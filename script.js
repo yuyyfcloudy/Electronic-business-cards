@@ -234,8 +234,8 @@ window.sendResetCode = async function() {
         return;
     }
 
-    alert("验证码已发送至邮箱，请查收（有效期约 1 分钟）");
-    resetCountdown = 60;
+    alert("验证码已发送至邮箱，请查收（有效期 90 秒）");
+    resetCountdown = 90;
     updateResetBtnState();
 
     resetTimer = setInterval(() => {
