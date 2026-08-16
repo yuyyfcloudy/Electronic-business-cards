@@ -1811,8 +1811,22 @@ input, textarea {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 40px;
+    padding: 0 20px;
     height: 64px;
+}
+.nav-logo {
+    width: 160px;
+    flex-shrink: 0;
+}
+.nav-menu {
+    flex: 1;
+    justify-content: center;
+}
+.nav-user {
+    width: 160px;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
 }
 .nav-logo {
     font-size: 18px;
@@ -1951,7 +1965,47 @@ input, textarea {
 .page-header-row {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 100px 0px 60px 10px;
+    padding: 100px 40px 20px;      /* 上内边距加大，标题整体往下 */
+    display: flex;
+    align-items: flex-start;        /* 顶部对齐：标题顶边 = 搜索顶边 */
+    justify-content: space-between; /* 标题靠左，搜索靠右 */
+    gap: 20px;
+}
+.page-header-row .page-header {
+    padding: 0;
+    text-align: left;              /* 标题左对齐 */
+}
+.page-header-row .search-bar-wrap {
+    width: 260px;
+    flex-shrink: 0;
+    text-align: right;
+    padding: 0;
+}
+@media (max-width: 900px) {
+    .page-header-row {
+        flex-direction: column;
+        padding: 100px 20px 20px;
+        gap: 16px;
+    }
+    .page-header-row .page-header {
+        order: -1;
+        text-align: center;
+    }
+    .page-header-row .search-bar-wrap {
+        width: 100%;
+        text-align: center;
+    }
+    .page-header-row .search-input {
+        width: 100%;
+        max-width: 320px;
+    }
+}
+
+/* ========== 名片广场：标题与搜索栏平齐 ========== */
+.page-header-row {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 95px 0px 60px 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
