@@ -62,8 +62,21 @@
 
 <script type="module" src="script.js"></script>
 
+
+
+
+
 <script type="module">
 import { supabase } from "./supabase.js";
+
+function normalizeHiddenFields(raw) {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string') {
+        try { return JSON.parse(raw); } catch(e) { return []; }
+    }
+    return [];
+}
 
 (async function(){
     const { data: userData } = await supabase.auth.getUser();
@@ -83,14 +96,16 @@ import { supabase } from "./supabase.js";
         document.getElementById("email").value = data.email || "";
         document.getElementById("github").value = data.github || "";
         document.getElementById("honor_text").value = data.honor_text || "";
-	        // 恢复隐私设置
-        if(data.hidden_fields && Array.isArray(data.hidden_fields)){
-            data.hidden_fields.forEach(field => {
-                const cb = document.querySelector(`.hide-check[data-field="${field}"]`);
-                if(cb) cb.checked = true;
-            });
-        }
-        if(data.is_hidden){
+        
+        // 恢复隐私设置
+        const hiddenFields = normalizeHiddenFields(data.hidden_fields);
+        hiddenFields.forEach(field => {
+            const cb = document.querySelector(`.hide-check[data-field="${field}"]`);
+            if(cb) cb.checked = true;
+        });
+        
+        // 关键修复：字符串 "false" 在 if 里是 true，必须严格判断
+        if(data.is_hidden === true || data.is_hidden === "true"){
             document.getElementById("hideAllCard").checked = true;
         }
 
@@ -108,16 +123,6 @@ import { supabase } from "./supabase.js";
         }
     }
 })();
-
-window.hideAllFields = function(){
-    document.querySelectorAll('.hide-check').forEach(cb => cb.checked = true);
-    document.getElementById("hideAllCard").checked = true;
-};
-window.showAllFields = function(){
-    document.querySelectorAll('.hide-check').forEach(cb => cb.checked = false);
-    document.getElementById("hideAllCard").checked = false;
-};
-
 </script>
 
 </body>
