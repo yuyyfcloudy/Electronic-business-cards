@@ -9,34 +9,33 @@
 </head>
 <body class="users-body">
 
-<nav class="top-nav" style="position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(12,14,27,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);">
-  <div class="nav-inner" style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:64px;">
-    <a href="home.html" class="nav-logo" style="font-size:18px;font-weight:700;color:#f1f5f9;text-decoration:none;display:flex;align-items:center;gap:8px;letter-spacing:-0.3px;">📇 电子名片</a>
-    <div class="nav-menu" style="display:flex;gap:8px;">
-      <a href="home.html" class="nav-link" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:14px;font-weight:500;padding:8px 16px;border-radius:10px;transition:all 0.3s ease;">首页</a>
-      <a href="users.html" class="nav-link active" style="color:#a78bfa;background:rgba(167,139,250,0.08);text-decoration:none;font-size:14px;font-weight:500;padding:8px 16px;border-radius:10px;transition:all 0.3s ease;">名片广场</a>
-      <a href="#" class="nav-link" onclick="goToMyCard();return false;" style="color:rgba(255,255,255,0.5);text-decoration:none;font-size:14px;font-weight:500;padding:8px 16px;border-radius:10px;transition:all 0.3s ease;">个人名片</a>
+<nav class="top-nav">
+  <div class="nav-inner">
+    <a href="home.html" class="nav-logo">📇 电子名片</a>
+    <div class="nav-menu">
+      <a href="home.html" class="nav-link">首页</a>
+      <a href="users.html" class="nav-link active">名片广场</a>
+      <a href="#" class="nav-link" onclick="goToMyCard();return false;">个人名片</a>
     </div>
-    <div class="nav-user" id="navUser" style="position:relative;">
-      <div class="avatar-wrap" onclick="toggleUserMenu(event)" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 12px;border-radius:12px;transition:all 0.3s ease;">
-        <img id="navAvatar" class="nav-avatar-img" src="" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid rgba(139,92,246,0.3);display:none;">
-        <div id="navAvatarFallback" class="nav-avatar-fallback" style="width:36px;height:36px;border-radius:50%;background:rgba(139,92,246,0.15);display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid rgba(139,92,246,0.2);">👤</div>
-        <span class="nav-user-text" id="navUserText" style="font-size:13px;color:rgba(255,255,255,0.6);font-weight:500;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">登录</span>
+    <div class="nav-user" id="navUser">
+      <div class="avatar-wrap" onclick="toggleUserMenu(event)">
+        <img id="navAvatar" class="nav-avatar-img" src="" alt="">
+        <div id="navAvatarFallback" class="nav-avatar-fallback">👤</div>
+        <span class="nav-user-text" id="navUserText">登录</span>
       </div>
-      <div class="user-dropdown" id="userDropdown" style="position:absolute;top:56px;right:0;background:rgba(26,29,58,0.98);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:8px;min-width:160px;box-shadow:0 20px 60px rgba(0,0,0,0.5);opacity:0;visibility:hidden;transform:translateY(-10px);transition:all 0.3s ease;">
-        <a href="card.html" style="display:block;padding:10px 16px;color:rgba(255,255,255,0.7);text-decoration:none;font-size:14px;border-radius:10px;transition:all 0.2s;">我的名片</a>
-        <a href="profile.html" style="display:block;padding:10px 16px;color:rgba(255,255,255,0.7);text-decoration:none;font-size:14px;border-radius:10px;transition:all 0.2s;">编辑资料</a>
-        <div class="dropdown-divider" style="height:1px;background:rgba(255,255,255,0.06);margin:8px;"></div>
-        <a href="#" onclick="doNavLogout();return false;" style="display:block;padding:10px 16px;color:rgba(255,255,255,0.7);text-decoration:none;font-size:14px;border-radius:10px;transition:all 0.2s;">退出登录</a>
+      <div class="user-dropdown" id="userDropdown">
+        <a href="card.html">我的名片</a>
+        <a href="profile.html">编辑资料</a>
+        <div class="dropdown-divider"></div>
+        <a href="#" onclick="doNavLogout();return false;">退出登录</a>
       </div>
     </div>
   </div>
 </nav>
 
 <!-- 搜索栏 -->
-<div style="max-width:1200px;margin:0 auto;padding:84px 40px 20px;text-align:right;">
-  <input type="text" id="searchInput" placeholder="🔍 搜索姓名或职位..." 
-         style="padding:10px 20px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.8);width:260px;outline:none;font-size:14px;transition:all 0.3s;">
+<div class="search-bar-wrap">
+  <input type="text" id="searchInput" placeholder="🔍 搜索姓名或职位..." class="search-input">
 </div>
 
 <header class="page-header">
@@ -48,6 +47,7 @@
     <div class="loading-state">正在加载名片数据...</div>
 </div>
 
+<script type="module" src="script.js"></script>
 <script type="module">
 import { supabase } from "./supabase.js";
 
@@ -442,8 +442,8 @@ fetchData();
 
 // 定时轮询，每 8 秒静默刷新一次
 setInterval(fetchData, 8000);
-</script>
 
-<script type="module" src="script.js"></script>
+updateNavUser();
+</script>
 </body>
 </html>
