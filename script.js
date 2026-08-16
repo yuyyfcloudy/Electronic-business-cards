@@ -170,3 +170,132 @@ window.updateFileName = function(input, nameId){
         nameSpan.style.color = "#888";
     }
 }
+
+/* =====================
+   忘记密码 — 验证码重置
+   ===================== */
+
+let resetCountdown = 0;
+let resetTimer = null;
+
+window.openForgotModal = function() {
+    document.getElementById("forgotModal").style.display = "flex";
+    document.getElementById("resetEmail").value = "";
+    document.getElementById("resetCode").value = "";
+    document.getElementById("resetNewPwd").value = "";
+    document.getElementById("resetConfirmPwd").value = "";
+    resetCountdown = 0;
+    updateResetBtnState();
+};
+
+window.closeForgotModal = function() {
+    document.getElementById("forgotModal").style.display = "none";
+    if(resetTimer) {
+        clearInterval(resetTimer);
+        resetTimer = null;
+    }
+};
+
+function updateResetBtnState() {
+    const btn = document.getElementById("sendCodeBtn");
+    if(!btn) return;
+    if(resetCountdown > 0) {
+        btn.textContent = resetCountdown + "s 后重发";
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+        btn.style.cursor = "not-allowed";
+        btn.style.filter = "grayscale(0.6)";
+    } else {
+        btn.textContent = "发送验证码";
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.cursor = "pointer";
+        btn.style.filter = "none";
+    }
+}
+
+window.sendResetCode = async function() {
+    const email = document.getElementById("resetEmail").value.trim();
+    if(!email) {
+        alert("请输入邮箱地址");
+        return;
+    }
+
+    const btn = document.getElementById("sendCodeBtn");
+    btn.textContent = "发送中...";
+    btn.disabled = true;
+
+    const { error } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+            shouldCreateUser: false   // 禁止创建新用户，只有已注册用户才能收到验证码
+        }
+    });
+
+    if(error) {
+        alert("发送失败: " + error.message);
+        updateResetBtnState();
+        return;
+    }
+
+    alert("验证码已发送至邮箱，请查收（有效期约 1 分钟）");
+    resetCountdown = 60;
+    updateResetBtnState();
+
+    resetTimer = setInterval(() => {
+        resetCountdown--;
+        updateResetBtnState();
+        if(resetCountdown <= 0) {
+            clearInterval(resetTimer);
+            resetTimer = null;
+        }
+    }, 1000);
+};
+
+window.submitResetPassword = async function() {
+    const email = document.getElementById("resetEmail").value.trim();
+    const code = document.getElementById("resetCode").value.trim();
+    const newPwd = document.getElementById("resetNewPwd").value;
+    const confirmPwd = document.getElementById("resetConfirmPwd").value;
+
+    if(!email || !code || !newPwd || !confirmPwd) {
+        alert("请填写所有字段");
+        return;
+    }
+    if(newPwd !== confirmPwd) {
+        alert("两次输入的密码不一致");
+        return;
+    }
+    if(newPwd.length < 6) {
+        alert("密码至少6位");
+        return;
+    }
+
+    // 1. 验证 OTP 验证码
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: email,
+        token: code,
+        type: 'email'
+    });
+
+    if(verifyError) {
+        alert("验证码错误或已过期，请重新获取");
+        return;
+    }
+
+    // 2. 验证通过后，直接修改密码
+    const { error: updateError } = await supabase.auth.updateUser({
+        password: newPwd
+    });
+
+    if(updateError) {
+        alert("密码修改失败: " + updateError.message);
+        return;
+    }
+
+    // 3. 修改成功后清除登录态，让用户用新密码重新登录
+    await supabase.auth.signOut();
+
+    alert("✅ 密码重置成功！请使用新密码登录");
+    closeForgotModal();
+};

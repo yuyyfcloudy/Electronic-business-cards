@@ -104,6 +104,25 @@
 @media (max-width: 900px) {
     .login-divider { display: none; }
 }
+
+/* 忘记密码弹窗内样式微调 */
+.forgot-field-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 12px;
+}
+.forgot-field-row .login-field {
+    flex: 1;
+    margin: 0;
+}
+.forgot-field-row button {
+    width: auto;
+    margin: 0;
+    padding: 12px 16px;
+    font-size: 13px;
+    white-space: nowrap;
+}
 </style>
 </head>
 <body class="login-body">
@@ -158,8 +177,44 @@
 
       <div class="login-links">
         <span>还没有账号？<a href="register.html">立即注册</a></span>
+        <a href="#" onclick="openForgotModal(); return false;">忘记密码？</a>
         <a href="users.html">📇 名片广场</a>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 忘记密码弹窗 ========== -->
+<div id="forgotModal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>🔐 重置密码</h3>
+    
+    <div class="login-field" style="text-align:left; margin-bottom:12px;">
+      <label>邮箱地址</label>
+      <input id="resetEmail" type="email" placeholder="name@example.com">
+    </div>
+    
+    <div class="forgot-field-row">
+      <div class="login-field" style="text-align:left;">
+        <label>验证码</label>
+        <input id="resetCode" type="text" placeholder="6位验证码" maxlength="6" style="text-align:center; letter-spacing:6px; font-size:18px; font-weight:600;">
+      </div>
+      <button id="sendCodeBtn" onclick="sendResetCode()">发送验证码</button>
+    </div>
+    
+    <div class="login-field" style="text-align:left; margin-bottom:12px;">
+      <label>新密码</label>
+      <input id="resetNewPwd" type="password" placeholder="至少6位">
+    </div>
+    
+    <div class="login-field" style="text-align:left; margin-bottom:12px;">
+      <label>确认密码</label>
+      <input id="resetConfirmPwd" type="password" placeholder="再次输入新密码">
+    </div>
+    
+    <div class="modal-buttons">
+      <button onclick="submitResetPassword()">确认重置</button>
+      <button class="secondary" onclick="closeForgotModal()">取消</button>
     </div>
   </div>
 </div>
