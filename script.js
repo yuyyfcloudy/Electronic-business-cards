@@ -65,7 +65,6 @@ window.saveProfile = async function(){
         return;
     }
 
-        // 收集隐私设置
     const hiddenChecks = document.querySelectorAll('.hide-check:checked');
     const hiddenFields = Array.from(hiddenChecks).map(cb => cb.dataset.field);
     const isHidden = document.getElementById("hideAllCard").checked;
@@ -228,7 +227,7 @@ window.sendResetCode = async function() {
     const { error } = await supabase.auth.signInWithOtp({
         email: email,
         options: {
-            shouldCreateUser: false   // 禁止创建新用户，只有已注册用户才能收到验证码
+            shouldCreateUser: false
         }
     });
 
@@ -271,7 +270,6 @@ window.submitResetPassword = async function() {
         return;
     }
 
-    // 1. 验证 OTP 验证码
     const { error: verifyError } = await supabase.auth.verifyOtp({
         email: email,
         token: code,
@@ -283,7 +281,6 @@ window.submitResetPassword = async function() {
         return;
     }
 
-    // 2. 验证通过后，直接修改密码
     const { error: updateError } = await supabase.auth.updateUser({
         password: newPwd
     });
@@ -293,7 +290,6 @@ window.submitResetPassword = async function() {
         return;
     }
 
-    // 3. 修改成功后清除登录态，让用户用新密码重新登录
     await supabase.auth.signOut();
 
     alert("✅ 密码重置成功！请使用新密码登录");
