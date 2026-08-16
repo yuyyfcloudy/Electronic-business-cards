@@ -1951,9 +1951,9 @@ input, textarea {
 .page-header-row {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 100px 40px 20px;
+    padding: 84px 40px 20px;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 20px;
 }
@@ -1962,8 +1962,9 @@ input, textarea {
     flex-shrink: 0;
 }
 .page-header-row .page-header {
+    flex: 1;
+    text-align: center;
     padding: 0;
-    text-align: left; 
 }
 .page-header-row .search-bar-wrap {
     width: 260px;
