@@ -32,10 +32,10 @@
   </div>
 </nav>
 
-<!-- 占位，避免内容被固定导航栏遮挡 -->
+<!-- 占位 -->
 <div style="height:64px;"></div>
 
-<div class="profile-wrap" style="padding-top:24px;">
+<div class="profile-wrap">
   <aside class="profile-sidebar">
     <div class="sidebar-card">
       <div class="sidebar-avatar-wrap">
@@ -335,7 +335,7 @@ function renderHonorImages(honorData) {
 
         if(isOwner && !fromSquare){
             document.getElementById("actionBlock").style.display = "block";
-            document.getElementById("logoutBtn").style.display = "inline-flex";
+            const logoutBtn = document.getElementById("logoutBtn"); if(logoutBtn) logoutBtn.style.display = "inline-flex";
             document.getElementById("welcomeBar").style.display = "flex";
             if(data.is_hidden){
                 document.getElementById("welcomeText").textContent = "🙈 你的名片当前在名片广场中已隐藏";
@@ -349,7 +349,7 @@ function renderHonorImages(honorData) {
                     d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
             }
         } else if (isOwner && fromSquare) {
-            document.getElementById("logoutBtn").style.display = "inline-flex";
+            const logoutBtn = document.getElementById("logoutBtn"); if(logoutBtn) logoutBtn.style.display = "inline-flex";
         }
 
     } catch(err) {
