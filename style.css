@@ -1794,6 +1794,7 @@ input, textarea {
 
 
 
+
 /* ========== 统一导航栏（追加） ========== */
 .top-nav {
     position: fixed;
@@ -1943,4 +1944,52 @@ input, textarea {
     .nav-inner { padding: 0 20px; }
     .nav-menu { display: none; }
     .search-bar-wrap { padding: 84px 20px 20px; }
+}
+
+
+/* ========== 名片广场：标题与搜索栏平齐 ========== */
+.page-header-row {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 84px 40px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+.page-header-spacer {
+    width: 260px;
+    flex-shrink: 0;
+}
+.page-header-row .page-header {
+    flex: 1;
+    text-align: center;
+    padding: 0;
+}
+.page-header-row .search-bar-wrap {
+    width: 260px;
+    flex-shrink: 0;
+    text-align: right;
+    padding: 0;
+}
+@media (max-width: 900px) {
+    .page-header-row {
+        flex-direction: column;
+        padding: 84px 20px 20px;
+        gap: 16px;
+    }
+    .page-header-spacer {
+        display: none;
+    }
+    .page-header-row .page-header {
+        order: -1;
+    }
+    .page-header-row .search-bar-wrap {
+        width: 100%;
+        text-align: center;
+    }
+    .page-header-row .search-input {
+        width: 100%;
+        max-width: 320px;
+    }
 }

@@ -34,14 +34,16 @@
 </nav>
 
 <!-- 搜索栏 -->
-<div class="search-bar-wrap">
-  <input type="text" id="searchInput" placeholder="🔍 搜索姓名或职位..." class="search-input">
-</div>
-
-<header class="page-header">
+<div class="page-header-row">
+  <div class="page-header-spacer"></div>
+  <header class="page-header" style="padding-top:0;padding-bottom:0;">
     <h1>名片广场</h1>
     <p>发现优秀的电子名片，点击卡片查看完整信息</p>
-</header>
+  </header>
+  <div class="search-bar-wrap" style="padding:0;">
+    <input type="text" id="searchInput" placeholder="🔍 搜索姓名或职位..." class="search-input">
+  </div>
+</div>
 
 <div class="grid" id="userList">
     <div class="loading-state">正在加载名片数据...</div>
