@@ -255,7 +255,7 @@ function updateCard(entry, user) {
     const { refs } = entry;
     const hiddenFields = normalizeHiddenFields(user.hidden_fields);
     const isOwner = user.id === currentUserId;
-    const shouldHideField = (field) => shouldHideField(field) && !isOwner;
+    const shouldHideField = (field) => hiddenFields.includes(field) && !isOwner;
 
     // 头像
     const newAvatar = getAvatarUrl(user.avatar);
