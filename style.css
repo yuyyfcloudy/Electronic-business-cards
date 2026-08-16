@@ -1951,7 +1951,7 @@ input, textarea {
 .page-header-row {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 104px 40px 60px;
+    padding: 100px 0px 60px 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
