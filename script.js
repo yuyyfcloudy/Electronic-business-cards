@@ -171,14 +171,16 @@ window.updateFileName = function(input, nameId){
 }
 
 /* =====================
-   忘记密码 — 验证码重置
+   忘记密码 — 内联表单
    ===================== */
 
 let resetCountdown = 0;
 let resetTimer = null;
 
-window.openForgotModal = function() {
-    document.getElementById("forgotModal").style.display = "flex";
+window.showForgotForm = function() {
+    document.getElementById("loginForm").style.display = "none";
+    document.getElementById("forgotForm").style.display = "block";
+    // Clear fields
     document.getElementById("resetEmail").value = "";
     document.getElementById("resetCode").value = "";
     document.getElementById("resetNewPwd").value = "";
@@ -187,8 +189,9 @@ window.openForgotModal = function() {
     updateResetBtnState();
 };
 
-window.closeForgotModal = function() {
-    document.getElementById("forgotModal").style.display = "none";
+window.showLoginForm = function() {
+    document.getElementById("forgotForm").style.display = "none";
+    document.getElementById("loginForm").style.display = "block";
     if(resetTimer) {
         clearInterval(resetTimer);
         resetTimer = null;
@@ -201,15 +204,9 @@ function updateResetBtnState() {
     if(resetCountdown > 0) {
         btn.textContent = resetCountdown + "s 后重发";
         btn.disabled = true;
-        btn.style.opacity = "0.5";
-        btn.style.cursor = "not-allowed";
-        btn.style.filter = "grayscale(0.6)";
     } else {
         btn.textContent = "发送验证码";
         btn.disabled = false;
-        btn.style.opacity = "1";
-        btn.style.cursor = "pointer";
-        btn.style.filter = "none";
     }
 }
 
@@ -293,5 +290,5 @@ window.submitResetPassword = async function() {
     await supabase.auth.signOut();
 
     alert("✅ 密码重置成功！请使用新密码登录");
-    closeForgotModal();
+    showLoginForm();
 };
