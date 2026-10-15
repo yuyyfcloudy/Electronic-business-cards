@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>注册账号</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="refined.css">
+<link rel="stylesheet" href="secondary-polish.css">
+<script defer src="secondary-motion.js"></script>
+
+</head>
+<body class="form-body">
+<nav class="form-nav"><a class="form-nav-brand" href="index.html">E-ID</a><a href="users.html">名片广场 →</a></nav>
+<main class="registration-layout">
+<section class="registration-story">
+<p class="secondary-kicker">YOUR NEXT CONNECTION</p>
+<h2>从一张名片，<br>到更多<em>可能。</em></h2>
+<p>让介绍更轻松，让连接更自然。把你的故事、作品与联系方式，收进一张随时可分享的电子名片。</p>
+<div class="registration-note"><span>01 — 03</span><div>创建账号 · 完善资料 · 分享名片<br>新的连接，从这里开始。</div></div>
+</section>
+<form class="box" id="registerForm" onsubmit="event.preventDefault(); register();">
+<p class="secondary-kicker">CREATE YOUR E-ID</p>
+<h1>创建账号</h1>
+<p style="margin-bottom:25px;color:#888;">开启你的电子名片之旅</p>
+<label class="form-field">邮箱地址<input id="email" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+<label class="form-field">设置密码<input id="password" type="password" autocomplete="new-password" placeholder="至少 6 位字符" minlength="6" required></label>
+<label class="form-field">确认密码<input id="confirmPassword" type="password" autocomplete="new-password" placeholder="再次输入密码" minlength="6" required></label>
+<button id="registerSubmit" type="submit">创建我的账号 <span aria-hidden="true">↗</span></button>
+<p id="registerFeedback" class="form-feedback" role="status" aria-live="polite"></p>
+<p class="registration-footer">已有账号？<a href="index.html">去登录</a></p>
+</form>
+<script type="module" src="script.js"></script>
+</body>
+</html>

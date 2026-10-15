@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>填写资料</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="refined.css">
+<link rel="stylesheet" href="secondary-polish.css">
+<script defer src="secondary-motion.js"></script>
+</head>
+<body class="form-body">
+<nav class="form-nav"><a class="form-nav-brand" href="index.html">E-ID</a><a href="card.html">返回我的名片 →</a></nav>
+<header class="profile-editor-intro">
+<p class="secondary-kicker">MAKE IT YOURS</p><h1>把你的故事，放上名片。</h1><p>完善个人资料，让下一次相遇从了解你开始。</p>
+</header>
+<main class="box profile-editor">
+<h2 class="form-section-heading"><span>01</span> 基本信息</h2>
+<div class="form-pair"><label class="form-field">姓名<input id="name" autocomplete="name" placeholder="如何称呼你"></label><label class="form-field">职位<input id="job" autocomplete="organization-title" placeholder="你的身份或正在做的事"></label></div>
+<label class="form-field">个人介绍<textarea id="intro" placeholder="简单介绍你的经历、兴趣或擅长的领域"></textarea></label>
+<label class="file-upload"><input type="file" id="avatar" accept="image/*" onchange="updateFileName(this)"><span class="file-btn">选择头像</span><span class="file-name" id="fileName">未选择文件</span></label>
+<h2 class="form-section-heading"><span>02</span> 保持联系</h2>
+<div class="form-pair"><label class="form-field">电话号码<input id="phone" type="tel" autocomplete="tel" placeholder="你的联系电话"></label><label class="form-field">邮箱地址<input id="email" type="email" autocomplete="email" placeholder="you@example.com"></label></div>
+<label class="form-field">GitHub<input id="github" type="url" placeholder="https://github.com/yourname"></label>
+<h2 class="form-section-heading"><span>03</span> 值得分享</h2>
+<label class="form-field">个人荣誉<textarea id="honor_text" placeholder="记录让你自豪的成就、奖项或经历"></textarea></label>
+<label class="file-upload"><input type="file" id="honor_image" accept="image/*" multiple onchange="updateFileName(this, 'honorFileName')"><span class="file-btn">添加荣誉图片</span><span class="file-name" id="honorFileName">未选择文件（最多 6 张）</span></label>
+<div style="display:flex;gap:12px;margin-top:15px;"><button onclick="saveProfile()" style="flex:3;">保存我的名片 ↗</button><button onclick="clearProfile()" class="clear-btn" style="flex:1;">清空</button></div>
+<p id="profileFeedback" class="form-feedback" role="status" aria-live="polite"></p>
+</main>
+
+<script type="module" src="script.js"></script>
+
+<script type="module">
+import { supabase } from "./supabase.js";
+
+(async function(){
+    const { data: userData } = await supabase.auth.getUser();
+    if(!userData.user){ location.href="index.html"; return; }
+
+    const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userData.user.id)
+        .maybeSingle();
+
+    if(data){
+        document.getElementById("name").value = data.name || "";
+        document.getElementById("job").value = data.job || "";
+        document.getElementById("intro").value = data.intro || "";
+        document.getElementById("phone").value = data.phone || "";
+        document.getElementById("email").value = data.email || "";
+        document.getElementById("github").value = data.github || "";
+        document.getElementById("honor_text").value = data.honor_text || "";
+
+        if(data.honor_image){
+            try {
+                const arr = JSON.parse(data.honor_image);
+                if(Array.isArray(arr) && arr.length > 0){
+                    document.getElementById("honorFileName").textContent = "已上传 " + arr.length + " 张荣誉图片";
+                    document.getElementById("honorFileName").style.color = "#4d7135";
+                }
+            } catch(e) {
+                document.getElementById("honorFileName").textContent = "已上传 1 张荣誉图片";
+                document.getElementById("honorFileName").style.color = "#4d7135";
+            }
+        }
+    }
+})();
+</script>
+
+</body>
+</html>

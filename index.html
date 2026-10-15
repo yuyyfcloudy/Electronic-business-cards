@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101411">
+  <meta name="description" content="E-ID 数字名片，让每一次相遇都有下文。创建、更新并分享你的数字身份。">
+  <title>E-ID · 让相遇，有下文</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="refined.css">
+  <link rel="stylesheet" href="home.css">
+  <script src="home.js" defer></script>
+</head>
+<body class="login-body eid-home">
+  <a class="skip-link" href="#loginTitle">跳转到登录</a>
+  <div class="brand-intro" id="siteIntro" aria-hidden="true">
+    <div class="intro-lockup"><span>E<span class="intro-dash">—</span>ID<span class="intro-dot">®</span></span><small>让相遇，有下文。</small><i></i></div>
+  </div>
+  <header class="site-header">
+    <a class="eid-brand" href="index.html" aria-label="E-ID 首页">E<span>—</span>ID<sup>®</sup></a>
+    <span class="brand-description">你的数字名片</span>
+    <nav aria-label="主导航"><a href="users.html">名片广场 <span aria-hidden="true">↗</span></a></nav>
+  </header>
+  <main class="home-main">
+    <section class="hero-editorial" aria-labelledby="heroTitle">
+      <div class="hero-kicker reveal" style="--delay:0ms"><span class="status-dot"></span> 数字名片，从这里开始</div>
+      <h1 id="heroTitle" class="reveal" style="--delay:80ms">让每次相遇，<br><em>都有下文。</em><span class="headline-star" aria-hidden="true">✳</span></h1>
+      <p class="hero-lede reveal" style="--delay:160ms">把名字、作品和联系方式，放进一张随时更新的数字名片。</p>
+      <div class="hero-actions reveal" style="--delay:240ms"><a class="hero-cta" href="register.html">创建我的名片 <span aria-hidden="true">↗</span></a></div>
+      <div class="identity-showcase reveal" style="--delay:320ms">
+        <div class="card-scene" aria-label="数字名片外观示例">
+          <div class="identity-card identity-back" aria-hidden="true"><span>KEEP MOVING FORWARD.</span><b>E—ID</b></div>
+          <div class="identity-card identity-front" id="identityCard">
+            <div class="identity-card-top"><span>E—ID</span><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 11a7 7 0 0 1 0 10m5-14a13 13 0 0 1 0 18m5-22a19 19 0 0 1 0 26"/></svg></div>
+            <div class="identity-person"><span class="identity-monogram" aria-hidden="true">Z<span>↗</span></span><div><h2>周予安</h2><p>独立摄影师 · 杭州</p></div><span class="sample-label">数字名片</span></div>
+            <div class="identity-bottom"><span>把灵感分享出去</span><span aria-hidden="true">↗</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="home-login-panel reveal" style="--delay:220ms" aria-labelledby="loginTitle">
+      <div class="login-panel-top"><span>登录你的 E-ID</span><span aria-hidden="true">↗</span></div>
+      <div class="login-emblem" aria-hidden="true"><span></span><span></span><span></span><i></i></div>
+      <form id="loginForm" class="home-login-box">
+        <div class="login-heading"><h2 id="loginTitle" tabindex="-1">欢迎回来</h2><p>登录后继续管理你的数字名片</p></div>
+        <div class="login-field"><label for="email">邮箱地址</label><input id="email" name="email" type="email" autocomplete="username" placeholder="请输入邮箱" required></div>
+        <div class="login-field"><label for="password">密码</label><div class="password-wrap"><input id="password" name="password" type="password" autocomplete="current-password" placeholder="请输入密码" required><button type="button" class="password-toggle" id="passwordToggle" aria-label="显示密码" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="2.5"/></svg></button></div></div>
+        <p id="loginFeedback" class="login-feedback" role="status" aria-live="polite"></p>
+        <button type="submit" class="login-btn" id="loginSubmit"><span>进入我的空间</span><span aria-hidden="true">↗</span></button>
+      </form>
+      <div class="login-panel-bottom"><span class="status-dot"></span> 登录后即可管理你的数字名片</div>
+    </section>
+  </main>
+  <footer class="home-footer reveal" style="--delay:420ms">
+    <div class="footer-statement">一张名片，<br><span>让连接更自然。</span></div>
+    <div class="feature"><span class="feature-number">01</span><strong>即时分享</strong></div>
+    <div class="feature"><span class="feature-number">02</span><strong>随时更新</strong></div>
+    <div class="feature"><span class="feature-number">03</span><strong>完整表达</strong></div>
+    <span class="footer-signature">E-ID © 2026</span>
+  </footer>
+  <script type="module" src="script.js"></script>
+</body>
+</html>
