@@ -419,8 +419,12 @@ async function updateNavUser() {
   const avatarFallback = document.getElementById('navAvatarFallback');
   const userText = document.getElementById('navUserText');
   const dropdown = document.getElementById('userDropdown');
+  
+  // 获取首屏的两个按钮容器
+  const heroBtns = document.querySelector('.hero-btns');
 
   if (authData.user) {
+    // 已登录状态
     const { data: profile } = await supabase
       .from('profiles')
       .select('name, avatar')
@@ -445,7 +449,14 @@ async function updateNavUser() {
       <div class="dropdown-divider"></div>
       <a href="#" onclick="doLogout(); return false;">退出登录</a>
     `;
+
+    // ★ 已登录时，隐藏“立即创建名片”和“浏览名片广场”按钮
+    if (heroBtns) {
+        heroBtns.style.display = 'none'; 
+    }
+
   } else {
+    // 未登录状态
     userText.textContent = '登录';
     avatarFallback.textContent = '👤';
     avatarImg.style.display = 'none';
@@ -454,9 +465,13 @@ async function updateNavUser() {
       <a href="login.html">登录账号</a>
       <a href="register.html">注册账号</a>
     `;
+
+    // ★ 未登录时，显示这两个按钮
+    if (heroBtns) {
+        heroBtns.style.display = 'flex';
+    }
   }
 }
-
 // 下拉菜单切换
 window.toggleUserMenu = function(e) {
   if(e) e.stopPropagation();
