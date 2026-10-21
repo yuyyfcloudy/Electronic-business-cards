@@ -5,18 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>我的电子名片</title>
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="refined.css">
-<link rel="stylesheet" href="secondary-polish.css">
-<script defer src="secondary-motion.js"></script>
-
 </head>
 <body class="profile-body">
 
-<nav class="profile-nav">
-  <a href="users.html" class="nav-back">← 名片广场</a>
-  <span class="nav-title">电子名片</span>
-  <a href="#" class="nav-logout" id="logoutBtn" style="display:none;" onclick="doLogout(); return false;">退出登录</a>
+<nav class="top-nav">
+  <div class="nav-inner">
+    <a href="home.html" class="nav-logo">📇 电子名片</a>
+    <div class="nav-menu">
+      <a href="home.html" class="nav-link">首页</a>
+      <a href="users.html" class="nav-link">名片广场</a>
+      <a href="card.html" class="nav-link active">个人名片</a>
+    </div>
+    <div class="nav-user" id="navUser">
+      <div class="avatar-wrap" onclick="toggleUserMenu(event)">
+        <img id="navAvatar" class="nav-avatar-img" src="" alt="">
+        <div id="navAvatarFallback" class="nav-avatar-fallback">👤</div>
+        <span class="nav-user-text" id="navUserText">登录</span>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <a href="card.html">我的名片</a>
+        <a href="profile.html">编辑资料</a>
+        <div class="dropdown-divider"></div>
+        <a href="#" onclick="doNavLogout();return false;">退出登录</a>
+      </div>
+    </div>
+  </div>
 </nav>
+
+<!-- 占位 -->
+<div class="nav-spacer"></div>
 
 <div class="profile-wrap">
   <aside class="profile-sidebar">
@@ -30,7 +47,7 @@
       <div class="sidebar-divider"></div>
       <div class="sidebar-meta">
         <div class="meta-row">
-          <span class="meta-label">用户 ID</span>
+          <span class="meta-label">用户 - ID</span>
           <span class="meta-value" id="userId">—</span>
         </div>
         <div class="meta-row">
@@ -126,6 +143,7 @@
   </div>
 </div>
 
+<script type="module" src="script.js"></script>
 <script type="module">
 import { supabase } from "./supabase.js";
 
@@ -151,6 +169,15 @@ function getRandomQuote() {
 function truncate(str, len){
     if(!str) return "";
     return str.length > len ? str.slice(0, len) + "..." : str;
+}
+
+function normalizeHiddenFields(raw) {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string') {
+        try { return JSON.parse(raw); } catch(e) { return []; }
+    }
+    return [];
 }
 
 function renderHonorImages(honorData) {
@@ -193,14 +220,16 @@ function renderHonorImages(honorData) {
         const urlParams = new URLSearchParams(window.location.search);
         let targetId = urlParams.get('id');
 
+        const { data: authData } = await supabase.auth.getUser();
+        const currentUserId = authData.user ? authData.user.id : null;
+
         if(!targetId){
-            const { data: userData } = await supabase.auth.getUser();
-            if(!userData.user){
+            if(!currentUserId){
                 alert("请先登录");
-                location.href = "index.html";
+                location.href = "login.html";
                 return;
             }
-            targetId = userData.user.id;
+            targetId = currentUserId;
         }
 
         const { data, error } = await supabase
@@ -215,93 +244,113 @@ function renderHonorImages(honorData) {
             return;
         }
 
-        if(data.avatar){
-            document.getElementById("avatar").src = data.avatar;
+        isOwner = currentUserId === targetId;
+
+        const hiddenFields = normalizeHiddenFields(data.hidden_fields);
+        const shouldHideField = (field) => hiddenFields.includes(field) && !isOwner;
+
+        if((data.is_hidden === true || data.is_hidden === "true") && !isOwner){
+            alert("该名片已隐藏");
+            location.href = "users.html";
+            return;
         }
-        document.getElementById("name").textContent = data.name || "未命名";
-        document.getElementById("job").textContent = data.job || "暂无职位";
-        document.getElementById("userId").textContent = (data.id || "").slice(0, 12) + "...";
+
+        const avatarEl = document.getElementById("avatar");
+        if(avatarEl && data.avatar){
+            avatarEl.src = data.avatar;
+        }
+        document.getElementById("name").textContent = shouldHideField('name') ? "已隐藏" : (data.name || "未命名");
+        if(shouldHideField('name')) document.getElementById("name").style.opacity = "0.5";
+        document.getElementById("job").textContent = shouldHideField('job') ? "已隐藏" : (data.job || "暂无职位");
+        if(shouldHideField('job')) document.getElementById("job").style.opacity = "0.5";
+        document.getElementById("userId").textContent = data.id || "—";
 
         const introEl = document.getElementById("intro");
-        if(data.intro && data.intro.trim()){
+        if(data.intro && data.intro.trim() && !shouldHideField('intro')){
             introEl.textContent = data.intro;
             introEl.classList.remove("empty");
         } else {
-            introEl.textContent = "这位用户还没有填写个人介绍...";
-            introEl.classList.add("empty");
+            introEl.textContent = shouldHideField('intro') ? "该用户已隐藏个人介绍" : "这位用户还没有填写个人介绍...";
+            if(shouldHideField('intro')) introEl.classList.add("empty");
         }
 
         const phoneVal = document.getElementById("phoneVal");
         const phoneLink = document.getElementById("phoneLink");
-        if(data.phone){
+        if(data.phone && !shouldHideField('phone')){
             phoneVal.textContent = data.phone;
             phoneLink.href = "tel:" + data.phone;
             phoneLink.classList.remove("disabled");
         } else {
-            phoneVal.textContent = "未填写";
+            phoneVal.textContent = shouldHideField('phone') ? "已隐藏" : "未填写";
             phoneLink.classList.add("disabled");
             phoneLink.href = "#";
         }
 
         const emailVal = document.getElementById("emailVal");
         const emailLink = document.getElementById("emailLink");
-        if(data.email){
+        if(data.email && !shouldHideField('email')){
             emailVal.textContent = data.email;
             emailLink.href = "mailto:" + data.email;
             emailLink.classList.remove("disabled");
         } else {
-            emailVal.textContent = "未填写";
+            emailVal.textContent = shouldHideField('email') ? "已隐藏" : "未填写";
             emailLink.classList.add("disabled");
             emailLink.href = "#";
         }
 
         const githubVal = document.getElementById("githubVal");
         const githubLink = document.getElementById("githubLink");
-        if(data.github){
+        if(data.github && !shouldHideField('github')){
             githubVal.textContent = truncate(data.github, 24);
             githubLink.href = data.github;
             githubLink.target = "_blank";
             githubLink.classList.remove("disabled");
         } else {
-            githubVal.textContent = "未填写";
+            githubVal.textContent = shouldHideField('github') ? "已隐藏" : "未填写";
             githubLink.classList.add("disabled");
             githubLink.href = "#";
         }
 
         const honorBlock = document.getElementById("honorBlock");
         const honorTextEl = document.getElementById("honorText");
+        const hasVisibleHonor = (data.honor_text && !shouldHideField('honor_text')) || (data.honor_image && !shouldHideField('honor_image'));
         
-        if(data.honor_text || data.honor_image){
+        if(hasVisibleHonor){
             honorBlock.style.display = "block";
-            
-            if(data.honor_text && data.honor_text.trim()){
+            if(data.honor_text && data.honor_text.trim() && !shouldHideField('honor_text')){
                 honorTextEl.textContent = data.honor_text;
                 honorTextEl.style.display = "block";
             } else {
                 honorTextEl.style.display = "none";
             }
-            
-            renderHonorImages(data.honor_image);
+            if(!shouldHideField('honor_image')){
+                renderHonorImages(data.honor_image);
+            } else {
+                document.getElementById("honorImgContainer").innerHTML = "";
+            }
+        } else {
+            honorBlock.style.display = "none";
         }
-
-        const { data: currentUser } = await supabase.auth.getUser();
-        isOwner = currentUser.user && currentUser.user.id === targetId;
 
         const fromSquare = urlParams.has('id');
 
         if(isOwner && !fromSquare){
             document.getElementById("actionBlock").style.display = "block";
-            document.getElementById("logoutBtn").style.display = "inline-flex";
+            const logoutBtn = document.getElementById("logoutBtn"); if(logoutBtn) logoutBtn.style.display = "inline-flex";
             document.getElementById("welcomeBar").style.display = "flex";
-            document.getElementById("welcomeText").textContent = getRandomQuote();
-
-            if(currentUser.user && currentUser.user.created_at){
-                const d = new Date(currentUser.user.created_at);
+            if(data.is_hidden){
+                document.getElementById("welcomeText").textContent = "🙈 你的名片当前在名片广场中已隐藏";
+                document.getElementById("welcomeText").style.color = "#ff6b6b";
+            } else {
+                document.getElementById("welcomeText").textContent = getRandomQuote();
+            }
+            if(authData.user && authData.user.created_at){
+                const d = new Date(authData.user.created_at);
                 document.getElementById("joinDate").textContent = 
                     d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
             }
         } else if (isOwner && fromSquare) {
-            document.getElementById("logoutBtn").style.display = "inline-flex";
+            const logoutBtn = document.getElementById("logoutBtn"); if(logoutBtn) logoutBtn.style.display = "inline-flex";
         }
 
     } catch(err) {
@@ -366,17 +415,15 @@ window.submitChangePassword = async function(){
     } else {
         alert("密码修改成功，请重新登录");
         await supabase.auth.signOut();
-        location.href = "index.html";
+        location.href = "login.html";
     }
 };
 
 window.doLogout = async function(){
     await supabase.auth.signOut();
-    location.href = "index.html";
+    location.href = "login.html";
 };
+updateNavUser();
 </script>
-<script type="module" src="script.js"></script>
 </body>
 </html>
-
-

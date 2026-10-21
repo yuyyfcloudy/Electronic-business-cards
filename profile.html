@@ -5,38 +5,82 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>填写资料</title>
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="refined.css">
-<link rel="stylesheet" href="secondary-polish.css">
-<script defer src="secondary-motion.js"></script>
 </head>
-<body class="form-body">
-<nav class="form-nav"><a class="form-nav-brand" href="index.html">E-ID</a><a href="card.html">返回我的名片 →</a></nav>
-<header class="profile-editor-intro">
-<p class="secondary-kicker">MAKE IT YOURS</p><h1>把你的故事，放上名片。</h1><p>完善个人资料，让下一次相遇从了解你开始。</p>
-</header>
-<main class="box profile-editor">
-<h2 class="form-section-heading"><span>01</span> 基本信息</h2>
-<div class="form-pair"><label class="form-field">姓名<input id="name" autocomplete="name" placeholder="如何称呼你"></label><label class="form-field">职位<input id="job" autocomplete="organization-title" placeholder="你的身份或正在做的事"></label></div>
-<label class="form-field">个人介绍<textarea id="intro" placeholder="简单介绍你的经历、兴趣或擅长的领域"></textarea></label>
-<label class="file-upload"><input type="file" id="avatar" accept="image/*" onchange="updateFileName(this)"><span class="file-btn">选择头像</span><span class="file-name" id="fileName">未选择文件</span></label>
-<h2 class="form-section-heading"><span>02</span> 保持联系</h2>
-<div class="form-pair"><label class="form-field">电话号码<input id="phone" type="tel" autocomplete="tel" placeholder="你的联系电话"></label><label class="form-field">邮箱地址<input id="email" type="email" autocomplete="email" placeholder="you@example.com"></label></div>
-<label class="form-field">GitHub<input id="github" type="url" placeholder="https://github.com/yourname"></label>
-<h2 class="form-section-heading"><span>03</span> 值得分享</h2>
-<label class="form-field">个人荣誉<textarea id="honor_text" placeholder="记录让你自豪的成就、奖项或经历"></textarea></label>
-<label class="file-upload"><input type="file" id="honor_image" accept="image/*" multiple onchange="updateFileName(this, 'honorFileName')"><span class="file-btn">添加荣誉图片</span><span class="file-name" id="honorFileName">未选择文件（最多 6 张）</span></label>
-<div style="display:flex;gap:12px;margin-top:15px;"><button onclick="saveProfile()" style="flex:3;">保存我的名片 ↗</button><button onclick="clearProfile()" class="clear-btn" style="flex:1;">清空</button></div>
-<p id="profileFeedback" class="form-feedback" role="status" aria-live="polite"></p>
-</main>
+<body>
+<div class="box">
+<h1>📝 创建我的电子名片</h1>
+<p style="margin-bottom:25px;color:#888;">填写信息，生成你的专属名片</p>
+
+<input id="name" placeholder="姓名">
+<input id="job" placeholder="职位">
+<textarea id="intro" placeholder="个人介绍"></textarea>
+<input id="phone" placeholder="电话号码">
+<input id="email" placeholder="邮箱">
+<input id="github" placeholder="GitHub 链接">
+<textarea id="honor_text" placeholder="个人荣誉（如：2024年优秀毕业生、ACM铜奖等）"></textarea>
+<label class="file-upload">
+    <input type="file" id="honor_image" accept="image/*" multiple onchange="updateFileName(this, 'honorFileName')">
+    <span class="file-btn">🏆 荣誉图片</span>
+    <span class="file-name" id="honorFileName">未选择文件（最多6张）</span>
+</label>
+
+<label class="file-upload">
+    <input type="file" id="avatar" accept="image/*" onchange="updateFileName(this)">
+    <span class="file-btn">📷 选择头像</span>
+    <span class="file-name" id="fileName">未选择文件</span>
+</label>
+
+<div class="privacy-section">
+    <div class="privacy-title">🔒 隐私设置</div>
+    <p class="privacy-hint">勾选后，对应信息在名片广场中不可见</p>
+    <div class="privacy-grid">
+        <label class="privacy-item"><input type="checkbox" data-field="name" class="hide-check"> 姓名</label>
+        <label class="privacy-item"><input type="checkbox" data-field="job" class="hide-check"> 职位</label>
+        <label class="privacy-item"><input type="checkbox" data-field="intro" class="hide-check"> 个人介绍</label>
+        <label class="privacy-item"><input type="checkbox" data-field="phone" class="hide-check"> 电话</label>
+        <label class="privacy-item"><input type="checkbox" data-field="email" class="hide-check"> 邮箱</label>
+        <label class="privacy-item"><input type="checkbox" data-field="github" class="hide-check"> GitHub</label>
+        <label class="privacy-item"><input type="checkbox" data-field="honor_text" class="hide-check"> 荣誉文字</label>
+        <label class="privacy-item"><input type="checkbox" data-field="honor_image" class="hide-check"> 荣誉图片</label>
+    </div>
+    <div class="privacy-divider"></div>
+    <label class="privacy-all">
+        <input type="checkbox" id="hideAllCard"> 🙈 全部隐藏（名片广场中隐藏整张名片）
+    </label>
+    <div class="privacy-quick-actions">
+        <button onclick="hideAllFields()" style="background:linear-gradient(135deg, #ff6b6b, #ee5a5a);">🙈 全选隐藏</button>
+        <button onclick="showAllFields()" style="background:linear-gradient(135deg, #51cf66, #40c057);">👁️ 全部显示</button>
+    </div>
+</div>
+
+<div style="display:flex;gap:12px;margin-top:15px;">
+    <button onclick="saveProfile()" style="flex:1;">💾 保存修改</button>
+    <button onclick="clearProfile()" style="flex:1;background:linear-gradient(135deg, #ff6b6b, #ee5a5a);">🗑️ 清空</button>
+</div>
+
+</div>
 
 <script type="module" src="script.js"></script>
+
+
+
+
 
 <script type="module">
 import { supabase } from "./supabase.js";
 
+function normalizeHiddenFields(raw) {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string') {
+        try { return JSON.parse(raw); } catch(e) { return []; }
+    }
+    return [];
+}
+
 (async function(){
     const { data: userData } = await supabase.auth.getUser();
-    if(!userData.user){ location.href="index.html"; return; }
+    if(!userData.user) return;
 
     const { data } = await supabase
         .from("profiles")
@@ -52,17 +96,29 @@ import { supabase } from "./supabase.js";
         document.getElementById("email").value = data.email || "";
         document.getElementById("github").value = data.github || "";
         document.getElementById("honor_text").value = data.honor_text || "";
+        
+        // 恢复隐私设置
+        const hiddenFields = normalizeHiddenFields(data.hidden_fields);
+        hiddenFields.forEach(field => {
+            const cb = document.querySelector(`.hide-check[data-field="${field}"]`);
+            if(cb) cb.checked = true;
+        });
+        
+        // 关键修复：字符串 "false" 在 if 里是 true，必须严格判断
+        if(data.is_hidden === true || data.is_hidden === "true"){
+            document.getElementById("hideAllCard").checked = true;
+        }
 
         if(data.honor_image){
             try {
                 const arr = JSON.parse(data.honor_image);
                 if(Array.isArray(arr) && arr.length > 0){
                     document.getElementById("honorFileName").textContent = "已上传 " + arr.length + " 张荣誉图片";
-                    document.getElementById("honorFileName").style.color = "#4d7135";
+                    document.getElementById("honorFileName").style.color = "#667eea";
                 }
             } catch(e) {
                 document.getElementById("honorFileName").textContent = "已上传 1 张荣誉图片";
-                document.getElementById("honorFileName").style.color = "#4d7135";
+                document.getElementById("honorFileName").style.color = "#667eea";
             }
         }
     }

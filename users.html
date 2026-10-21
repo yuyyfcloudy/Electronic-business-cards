@@ -5,36 +5,56 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>名片广场</title>
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="refined.css">
-<link rel="stylesheet" href="secondary-polish.css">
-<script defer src="secondary-motion.js"></script>
 
 </head>
 <body class="users-body">
 
-<nav class="nav">
-    <a href="index.html" class="nav-brand">E-ID</a>
-    <div class="nav-links">
-        <a href="users.html" class="active">名片广场</a>
+<nav class="top-nav">
+  <div class="nav-inner">
+    <a href="home.html" class="nav-logo">📇 电子名片</a>
+    <div class="nav-menu">
+      <a href="home.html" class="nav-link">首页</a>
+      <a href="users.html" class="nav-link active">名片广场</a>
+      <a href="#" class="nav-link" onclick="goToMyCard();return false;">个人名片</a>
     </div>
-    <label class="nav-search"><span>⌕</span><input type="search" aria-label="搜索姓名或职位" id="searchInput" placeholder="搜索姓名或职位..." /></label>
+    <div class="nav-user" id="navUser">
+      <div class="avatar-wrap" onclick="toggleUserMenu(event)">
+        <img id="navAvatar" class="nav-avatar-img" src="" alt="">
+        <div id="navAvatarFallback" class="nav-avatar-fallback">👤</div>
+        <span class="nav-user-text" id="navUserText">登录</span>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <a href="card.html">我的名片</a>
+        <a href="profile.html">编辑资料</a>
+        <div class="dropdown-divider"></div>
+        <a href="#" onclick="doNavLogout();return false;">退出登录</a>
+      </div>
+    </div>
+  </div>
 </nav>
 
-<header class="page-header">
-    <div class="directory-heading-row">
-        <div><p class="secondary-kicker">发现更多连接</p><h1>名片广场</h1><p>看看大家如何介绍自己，也让别人更快认识你。</p></div>
-        <a class="directory-create" href="register.html">创建我的名片 <span aria-hidden="true">↗</span></a>
-    </div>
-</header>
+<!-- 搜索栏 -->
+<div class="page-header-row">
+  <div class="page-header-spacer"></div>
+  <header class="page-header" style="padding-top:0;padding-bottom:0;">
+    <h1>名片广场</h1>
+    <p>发现优秀的电子名片，点击卡片查看完整信息</p>
+  </header>
+  <div class="search-bar-wrap" style="padding:0;">
+    <input type="text" id="searchInput" placeholder="🔍 搜索姓名或职位..." class="search-input">
+  </div>
+</div>
 
-<div class="grid" id="userList" aria-live="polite" aria-label="名片列表">
+<div class="grid" id="userList">
     <div class="loading-state">正在加载名片数据...</div>
 </div>
 
+<script type="module" src="script.js"></script>
 <script type="module">
 import { supabase } from "./supabase.js";
 
 const list = document.getElementById("userList");
+let currentUserId = null;
 let allData = [];
 
 document.getElementById("searchInput").addEventListener("input", (e) => {
@@ -71,16 +91,16 @@ function truncate(str, len) {
 }
 
 // 创建一张新卡片 DOM，返回 { el, refs }
-function createCard(user) {
+function createCard(user, isNewEntry = false) {
     const card = document.createElement("div");
+    const hiddenFields = user.hidden_fields || [];
+    const isOwner = user.id === currentUserId;
+    const shouldHideField = (field) => hiddenFields.includes(field) && !isOwner;
     card.className = "user-card";
+    if (isNewEntry) {
+        card.classList.add("card-enter");
+    }
     card.dataset.id = user.id;
-    card.tabIndex = 0;
-    card.setAttribute('role', 'link');
-    card.setAttribute('aria-label', '查看 ' + (user.name || '未命名') + ' 的名片');
-    card.addEventListener('keydown', event => {
-        if (event.key === 'Enter') card.click();
-    });
     card.onclick = () => { location.href = "card.html?id=" + encodeURIComponent(user.id); };
 
     // ===== 头部：头像 + 基本信息 =====
@@ -115,11 +135,13 @@ function createCard(user) {
 
     const nameEl = document.createElement("h3");
     nameEl.className = "card-name";
-    nameEl.textContent = user.name || "未命名";
+    nameEl.textContent = shouldHideField('name') ? "已隐藏" : (user.name || "未命名");
+    if(shouldHideField('name')) nameEl.style.opacity = "0.5";
 
     const jobEl = document.createElement("p");
     jobEl.className = "card-job";
-    jobEl.textContent = user.job || "暂无职位";
+    jobEl.textContent = shouldHideField('job') ? "已隐藏" : (user.job || "暂无职位");
+    if(shouldHideField('job')) jobEl.style.opacity = "0.5";
 
     const idEl = document.createElement("span");
     idEl.className = "card-id";
@@ -136,15 +158,35 @@ function createCard(user) {
     contacts.className = "card-contacts";
 
     const contactDefs = [
-        { key: "phone", icon: "↗", label: "电话" },
-        { key: "email", icon: "@", label: "邮箱" },
-        { key: "github", icon: "⌘", label: "GitHub" },
+        { key: "phone", icon: "📞", label: "电话" },
+        { key: "email", icon: "✉️", label: "邮箱" },
+        { key: "github", icon: "💻", label: "GitHub" },
     ];
 
     const contactRefs = {};
     contactDefs.forEach(def => {
         const item = document.createElement("div");
         item.className = "contact-item";
+        
+        if(shouldHideField(def.key)) {
+            item.classList.add("empty");
+            const icon = document.createElement("span");
+            icon.className = "icon";
+            icon.textContent = def.icon;
+            const label = document.createElement("span");
+            label.className = "label";
+            label.textContent = def.label;
+            const value = document.createElement("span");
+            value.className = "value";
+            value.textContent = "已隐藏";
+            item.appendChild(icon);
+            item.appendChild(label);
+            item.appendChild(value);
+            contacts.appendChild(item);
+            contactRefs[def.key] = { item, value };
+            return;
+        }
+
         const val = user[def.key];
         if (!val) item.classList.add("empty");
 
@@ -167,6 +209,7 @@ function createCard(user) {
         contactRefs[def.key] = { item, value };
     });
 
+
     // ===== 简介区 =====
     const bio = document.createElement("div");
     bio.className = "card-bio";
@@ -177,12 +220,17 @@ function createCard(user) {
 
     const bioText = document.createElement("p");
     bioText.className = "card-bio-text";
-    const intro = user.intro;
-    if (intro && String(intro).trim()) {
-        bioText.textContent = String(intro).trim();
-    } else {
+    if(hiddenFields.includes('intro')) {
         bioText.classList.add("empty");
-        bioText.textContent = "这位用户还没有填写个人介绍...";
+        bioText.textContent = "该用户已隐藏个人介绍";
+    } else {
+        const intro = user.intro;
+        if (intro && String(intro).trim()) {
+            bioText.textContent = String(intro).trim();
+        } else {
+            bioText.classList.add("empty");
+            bioText.textContent = "这位用户还没有填写个人介绍...";
+        }
     }
 
     bio.appendChild(bioLabel);
@@ -225,6 +273,9 @@ function createCard(user) {
 // 更新已有卡片，只改动真正变化的数据
 function updateCard(entry, user) {
     const { refs } = entry;
+    const hiddenFields = normalizeHiddenFields(user.hidden_fields);
+    const isOwner = user.id === currentUserId;
+    const shouldHideField = (field) => hiddenFields.includes(field) && !isOwner;
 
     // 头像
     const newAvatar = getAvatarUrl(user.avatar);
@@ -239,16 +290,18 @@ function updateCard(entry, user) {
     }
 
     // 姓名
-    const newName = user.name || "未命名";
+    const newName = shouldHideField('name') ? "已隐藏" : (user.name || "未命名");
     if (refs.nameEl.textContent !== newName) {
         refs.nameEl.textContent = newName;
     }
+    refs.nameEl.style.opacity = shouldHideField('name') ? "0.5" : "1";
 
     // 职位
-    const newJob = user.job || "暂无职位";
+    const newJob = shouldHideField('job') ? "已隐藏" : (user.job || "暂无职位");
     if (refs.jobEl.textContent !== newJob) {
         refs.jobEl.textContent = newJob;
     }
+    refs.jobEl.style.opacity = shouldHideField('job') ? "0.5" : "1";
 
     // ID
     const newId = "ID: " + truncate(user.id, 12);
@@ -258,50 +311,62 @@ function updateCard(entry, user) {
 
     // 联系方式
     const contactDefs = [
-        { key: "phone", icon: "↗", label: "电话" },
-        { key: "email", icon: "@", label: "邮箱" },
-        { key: "github", icon: "⌘", label: "GitHub" },
+        { key: "phone", icon: "📞", label: "电话" },
+        { key: "email", icon: "✉️", label: "邮箱" },
+        { key: "github", icon: "💻", label: "GitHub" },
     ];
     contactDefs.forEach(def => {
         const ref = refs.contactRefs[def.key];
-        const val = user[def.key];
-        const displayVal = val ? truncate(val, 16) : "未填写";
-
-        if (ref.value.textContent !== displayVal) {
-            ref.value.textContent = displayVal;
-        }
-
-        if (val) {
-            ref.item.classList.remove("empty");
-        } else {
+        if(shouldHideField(def.key)) {
+            const displayVal = "已隐藏";
+            if(ref.value.textContent !== displayVal) {
+                ref.value.textContent = displayVal;
+            }
             ref.item.classList.add("empty");
+        } else {
+            const val = user[def.key];
+            const displayVal = val ? truncate(val, 16) : "未填写";
+            if(ref.value.textContent !== displayVal) {
+                ref.value.textContent = displayVal;
+            }
+            if(val) {
+                ref.item.classList.remove("empty");
+            } else {
+                ref.item.classList.add("empty");
+            }
         }
     });
 
     // 简介
-    const intro = user.intro;
-    if (intro && String(intro).trim()) {
-        const newIntro = String(intro).trim();
-        if (refs.bioText.textContent !== newIntro) {
-            refs.bioText.textContent = newIntro;
-            refs.bioText.classList.remove("empty");
+    if(shouldHideField('intro')) {
+        const hiddenText = "该用户已隐藏个人介绍";
+        if(refs.bioText.textContent !== hiddenText) {
+            refs.bioText.textContent = hiddenText;
+            refs.bioText.classList.add("empty");
         }
     } else {
-        const emptyText = "这位用户还没有填写个人介绍...";
-        if (refs.bioText.textContent !== emptyText) {
-            refs.bioText.textContent = emptyText;
-            refs.bioText.classList.add("empty");
+        const intro = user.intro;
+        if(intro && String(intro).trim()) {
+            const newIntro = String(intro).trim();
+            if(refs.bioText.textContent !== newIntro) {
+                refs.bioText.textContent = newIntro;
+                refs.bioText.classList.remove("empty");
+            }
+        } else {
+            const emptyText = "这位用户还没有填写个人介绍...";
+            if(refs.bioText.textContent !== emptyText) {
+                refs.bioText.textContent = emptyText;
+                refs.bioText.classList.add("empty");
+            }
         }
     }
 
-    // 更新点击事件
     entry.el.onclick = () => { location.href = "card.html?id=" + encodeURIComponent(user.id); };
 }
 
 // 核心渲染：diff 更新，绝不整体 innerHTML 覆盖
 function render(data) {
     if (!data) data = [];
-    list.querySelectorAll('.loading-state, .empty-state').forEach(element => element.remove());
 
     const currentIds = new Set(data.map(u => u.id));
 
@@ -325,7 +390,7 @@ function render(data) {
                 list.insertBefore(entry.el, refNode);
             }
         } else {
-            const newEntry = createCard(user);
+            const newEntry = createCard(user, !isFirstLoad);
             cardMap.set(user.id, newEntry);
             if (refNode) {
                 list.insertBefore(newEntry.el, refNode);
@@ -336,9 +401,8 @@ function render(data) {
     });
 
     // 3. 首次加载且空数据时显示提示
-    if (data.length === 0) {
-        const searching = document.getElementById('searchInput').value.trim();
-        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">↗</div><div class="empty-state-text">' + (searching ? '没有找到匹配的名片，试试其他姓名或职位。' : '第一张名片，等你来创建。') + '</div></div>';
+    if (isFirstLoad && data.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📇</div><div class="empty-state-text">还没有人创建名片，快去创建第一张吧！</div></div>';
     }
 
     isFirstLoad = false;
@@ -346,19 +410,21 @@ function render(data) {
 
 // 拉取数据 — 查询全部字段
 async function fetchData() {
-    const { data, error } = await supabase
+	  const { data: authData } = await supabase.auth.getUser();
+  	  currentUserId = authData.user ? authData.user.id : null;
+ 	  const { data, error } = await supabase
         .from("profiles")
-        .select("id, name, job, avatar, phone, email, github, intro");
+        .select("id, name, job, avatar, phone, email, github, intro, hidden_fields, is_hidden");
 
     if (error) {
         console.error(error);
         if (isFirstLoad) {
-            list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">↗</div><div class="empty-state-text">暂时无法加载名片，请稍后重试。</div></div>';
+            list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">加载失败: ' + error.message + '</div></div>';
         }
         return;
     }
 
-    allData = data || [];
+	allData = (data || []).filter(u => !(u.is_hidden === true || u.is_hidden === "true"));
     
     // 如果搜索框有内容，保持当前搜索结果
     const keyword = document.getElementById("searchInput").value.toLowerCase().trim();
@@ -369,7 +435,7 @@ async function fetchData() {
         );
         render(filtered);
     } else {
-        render(data);
+        render(allData);
     }
 }
 
@@ -378,12 +444,8 @@ fetchData();
 
 // 定时轮询，每 8 秒静默刷新一次
 setInterval(fetchData, 8000);
-</script>
 
-<script type="module" src="script.js"></script>
+updateNavUser();
+</script>
 </body>
 </html>
-
-
-
-

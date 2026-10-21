@@ -1,38 +1,19 @@
 import { supabase } from "./supabase.js";
 
-function pageFeedback(id, message, tone = "error") {
-    const el = document.getElementById(id);
-    if (!el) return false;
-    el.textContent = message;
-    el.dataset.tone = tone;
-    return true;
-}
-
-function friendlyAuthError(error) {
-    const message = String(error?.message || "");
-    if (/invalid login credentials/i.test(message)) return "邮箱或密码不正确，请检查后重试。";
-    if (/email not confirmed/i.test(message)) return "邮箱还未确认，请先查收确认邮件。";
-    if (/user already registered/i.test(message)) return "这个邮箱已经注册过了，直接登录即可。";
-    return message || "暂时无法完成操作，请稍后再试。";
-}
-
 window.register = async () => {
     let email = document.getElementById("email").value;
     let password = document.getElementById("password").value;
     let confirmPassword = document.getElementById("confirmPassword").value;
 
     if(password !== confirmPassword){
-        pageFeedback("registerFeedback", "两次输入的密码不一致。请重新确认密码。");
+        alert("两次输入的密码不一致");
         return;
     }
 
     if(password.length < 6){
-        pageFeedback("registerFeedback", "密码至少需要 6 位字符。");
+        alert("密码至少6位");
         return;
     }
-
-    pageFeedback("registerFeedback", "正在创建账号…", "pending");
-    document.getElementById("registerSubmit")?.setAttribute("disabled", "true");
 
     const {data, error} = await supabase.auth.signUp({
         email: email,
@@ -40,13 +21,11 @@ window.register = async () => {
     });
 
     if(error){
-        pageFeedback("registerFeedback", friendlyAuthError(error));
-        document.getElementById("registerSubmit")?.removeAttribute("disabled");
+        alert(error.message);
     }
     else{
-        pageFeedback("registerFeedback", "注册成功！请查收邮箱确认账号。", "success");
-        document.getElementById("registerSubmit")?.removeAttribute("disabled");
-        location.href="index.html";
+        alert("注册成功！请前往邮箱查收确认邮件，点击链接激活账号后再登录");
+        location.href="login.html";
     }
 }
 
@@ -60,7 +39,7 @@ window.login = async function(){
     });
 
     if(error){
-        if (!pageFeedback("loginFeedback", friendlyAuthError(error))) alert(friendlyAuthError(error));
+        alert(error.message);
     }
     else{
         const { data: profileData } = await supabase
@@ -82,9 +61,13 @@ window.saveProfile = async function(){
 
     if(!userData.user){
         alert("请先登录");
-        location.href="index.html";
+        location.href="login.html";
         return;
     }
+
+    const hiddenChecks = document.querySelectorAll('.hide-check:checked');
+    const hiddenFields = Array.from(hiddenChecks).map(cb => cb.dataset.field);
+    const isHidden = document.getElementById("hideAllCard").checked;
 
     let avatarUrl = "";
     let honorImageUrls = [];
@@ -129,6 +112,8 @@ window.saveProfile = async function(){
         email: document.getElementById("email").value,
         github: document.getElementById("github").value,
         honor_text: document.getElementById("honor_text").value,
+        hidden_fields: hiddenFields,
+        is_hidden: isHidden
     };
 
     if(avatarUrl){
@@ -143,11 +128,11 @@ window.saveProfile = async function(){
         .upsert(profile);
 
     if(error){
-        if (!pageFeedback("profileFeedback", error.message || "保存失败，请稍后再试。")) alert(error.message);
+        alert(error.message);
         console.log(error);
     }
     else{
-        pageFeedback("profileFeedback", "保存成功，正在打开你的名片…", "success");
+        alert("保存成功");
         location.href="card.html";
     }
 }
@@ -184,149 +169,206 @@ window.updateFileName = function(input, nameId){
         nameSpan.style.color = "#888";
     }
 }
-/* -------------------------------------------------------------------------
-   Interaction layer
-   Small, tactile interactions shared by every page. This is intentionally
-   independent from the Supabase code above: it only decorates existing DOM
-   nodes and safely no-ops when a page does not contain them.
---------------------------------------------------------------------------- */
-(function initInteractionLayer() {
-    const finePointer = window.matchMedia && window.matchMedia("(pointer: fine)").matches;
-    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const style = document.createElement("style");
-    style.textContent = `
-      .interaction-spotlight { position: relative; isolation: isolate; }
-      .interaction-spotlight::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-        background: radial-gradient(280px circle at var(--pointer-x,50%) var(--pointer-y,50%), rgba(255,255,255,.12), transparent 68%);
-        opacity: 0; transition: opacity .35s ease; }
-      .interaction-spotlight:hover::after, .interaction-spotlight.is-pointed::after { opacity: 1; }
-      .tilt-item { transform: perspective(900px) rotateX(var(--tilt-y,0deg)) rotateY(var(--tilt-x,0deg));
-        transition: transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease; will-change: transform; }\n      .tilt-item:hover { transform: perspective(900px) rotateX(var(--tilt-y,0deg)) rotateY(var(--tilt-x,0deg)) translateY(-7px); }
-      .reveal-item { opacity: 0; transform: translateY(18px); transition: opacity .65s ease, transform .65s cubic-bezier(.2,.8,.2,1); }
-      .reveal-item.is-visible { opacity: 1; transform: translateY(0); }
-      .cursor-aura { position: fixed; left: 0; top: 0; width: 260px; height: 260px; border-radius: 50%; pointer-events: none; z-index: 9999;
-        opacity: 0; mix-blend-mode: screen; background: radial-gradient(circle, rgba(255,255,255,.10), rgba(255,255,255,0) 68%);
-        transform: translate(-50%,-50%); transition: opacity .3s ease; }
-      body.has-cursor-aura .cursor-aura { opacity: 1; }
-      .ui-ripple { position: absolute; width: 8px; height: 8px; border-radius: 50%; pointer-events:none;
-        background: currentColor; opacity: .28; transform: translate(-50%,-50%) scale(0); animation: ui-ripple .55s ease-out forwards; }
-      @keyframes ui-ripple { to { opacity: 0; transform: translate(-50%,-50%) scale(18); } }
-      @media (prefers-reduced-motion: reduce) {
-        .reveal-item { opacity: 1; transform: none; transition: none; }
-        .tilt-item { transform: none !important; transition: none; }
-        .cursor-aura { display: none; }
-      }
-    `;
-    document.head.appendChild(style);
+/* =====================
+   忘记密码 — 内联表单
+   ===================== */
 
-    const spotlightSelector = ".user-card, .login-box, .feature-item, .info-block, .sidebar-card, .contact-box, .box, .nav-brand";
-    const tiltSelector = ".user-card, .login-box, .sidebar-card, .contact-box";
+let resetCountdown = 0;
+let resetTimer = null;
 
-    document.querySelectorAll(spotlightSelector).forEach((el, index) => {
-        el.classList.add("interaction-spotlight", "reveal-item");
-        if (index < 4) el.style.transitionDelay = `${index * 55}ms`;
-    });
-    document.querySelectorAll(tiltSelector).forEach(el => el.classList.add("tilt-item"));
+window.showForgotForm = function() {
+    document.getElementById("loginForm").style.display = "none";
+    document.getElementById("forgotForm").style.display = "block";
+    // Clear fields
+    document.getElementById("resetEmail").value = "";
+    document.getElementById("resetCode").value = "";
+    document.getElementById("resetNewPwd").value = "";
+    document.getElementById("resetConfirmPwd").value = "";
+    resetCountdown = 0;
+    updateResetBtnState();
+};
 
-    if ("IntersectionObserver" in window && !reduceMotion) {
-        const observer = new IntersectionObserver(entries => entries.forEach(entry => {
-            if (entry.isIntersecting) { entry.target.classList.add("is-visible"); observer.unobserve(entry.target); }
-        }), { threshold: 0.12 });
-        document.querySelectorAll(".reveal-item").forEach(el => observer.observe(el));
+window.showLoginForm = function() {
+    document.getElementById("forgotForm").style.display = "none";
+    document.getElementById("loginForm").style.display = "block";
+    if(resetTimer) {
+        clearInterval(resetTimer);
+        resetTimer = null;
+    }
+};
+
+function updateResetBtnState() {
+    const btn = document.getElementById("sendCodeBtn");
+    if(!btn) return;
+    if(resetCountdown > 0) {
+        btn.textContent = resetCountdown + "s 后重发";
+        btn.disabled = true;
     } else {
-        document.querySelectorAll(".reveal-item").forEach(el => el.classList.add("is-visible"));
+        btn.textContent = "发送验证码";
+        btn.disabled = false;
+    }
+}
+
+window.sendResetCode = async function() {
+    const email = document.getElementById("resetEmail").value.trim();
+    if(!email) {
+        alert("请输入邮箱地址");
+        return;
     }
 
-    if (finePointer && !reduceMotion && !document.body.classList.contains("editorial-home")) {
-        const aura = document.createElement("div");
-        aura.className = "cursor-aura";
-        document.body.appendChild(aura);
-        let frame = 0;
-        let lastEvent;
-        document.addEventListener("pointermove", event => {
-            lastEvent = event;
-            if (frame) return;
-            frame = requestAnimationFrame(() => {
-                frame = 0;
-                const { clientX: x, clientY: y } = lastEvent;
-                aura.style.left = `${x}px`; aura.style.top = `${y}px`;
-                document.documentElement.style.setProperty("--cursor-x", `${x}px`);
-                document.documentElement.style.setProperty("--cursor-y", `${y}px`);
-            });
-        }, { passive: true });
-        document.addEventListener("pointerover", () => document.body.classList.add("has-cursor-aura"), { passive: true });
-        document.addEventListener("pointerout", event => { if (!event.relatedTarget) document.body.classList.remove("has-cursor-aura"); }, { passive: true });
+    const btn = document.getElementById("sendCodeBtn");
+    btn.textContent = "发送中...";
+    btn.disabled = true;
 
-        document.querySelectorAll(tiltSelector).forEach(el => {
-            el.addEventListener("pointermove", event => {
-                const rect = el.getBoundingClientRect();
-                const px = (event.clientX - rect.left) / rect.width;
-                const py = (event.clientY - rect.top) / rect.height;
-                el.style.setProperty("--pointer-x", `${px * 100}%`);
-                el.style.setProperty("--pointer-y", `${py * 100}%`);
-                el.style.setProperty("--tilt-x", `${(px - .5) * 3.5}deg`);
-                el.style.setProperty("--tilt-y", `${(.5 - py) * 3.5}deg`);
-                el.classList.add("is-pointed");
-            }, { passive: true });
-            el.addEventListener("pointerleave", () => {
-                el.style.setProperty("--tilt-x", "0deg"); el.style.setProperty("--tilt-y", "0deg");
-                el.classList.remove("is-pointed");
-            }, { passive: true });
-        });
-    }
-
-    document.querySelectorAll("button, .nav-links a, .login-links a, .nav-back, .nav-logout").forEach(el => {
-        if (getComputedStyle(el).position === "static") el.style.position = "relative";
-        el.style.overflow = "hidden";
-        el.addEventListener("pointerdown", event => {
-            if (reduceMotion) return;
-            const rect = el.getBoundingClientRect();
-            const ripple = document.createElement("i");
-            ripple.className = "ui-ripple";
-            ripple.style.left = `${event.clientX - rect.left}px`;
-            ripple.style.top = `${event.clientY - rect.top}px`;
-            el.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 650);
-        }, { passive: true });
+    const { error } = await supabase.auth.signInWithOtp({
+        email: email,
+        options: {
+            shouldCreateUser: false
+        }
     });
-})();
 
-// Cards in users.html are streamed from Supabase after this module loads.
-// Observe that stream so newly added cards receive the same tactile surface.
-(function bindDynamicCardInteractions() {
-    const list = document.getElementById("userList");
-    if (!list) return;
-    const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const bind = (card) => {
-        if (card.dataset.interactionBound) return;
-        card.dataset.interactionBound = "1";
-        card.classList.add("interaction-spotlight", "tilt-item");
-        if (!reduced) {
-            requestAnimationFrame(() => card.classList.add("is-visible"));
-            card.addEventListener("pointermove", event => {
-                const rect = card.getBoundingClientRect();
-                const px = (event.clientX - rect.left) / rect.width;
-                const py = (event.clientY - rect.top) / rect.height;
-                card.style.setProperty("--pointer-x", `${px * 100}%`);
-                card.style.setProperty("--pointer-y", `${py * 100}%`);
-                card.style.setProperty("--tilt-x", `${(px - .5) * 3.5}deg`);
-                card.style.setProperty("--tilt-y", `${(.5 - py) * 3.5}deg`);
-                card.classList.add("is-pointed");
-            }, { passive: true });
-            card.addEventListener("pointerleave", () => {
-                card.style.setProperty("--tilt-x", "0deg");
-                card.style.setProperty("--tilt-y", "0deg");
-                card.classList.remove("is-pointed");
-            }, { passive: true });
-        } else card.classList.add("is-visible");
-    };
-    list.querySelectorAll(".user-card").forEach(bind);
-    new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => {
-        if (node.nodeType !== 1) return;
-        if (node.matches && node.matches(".user-card")) bind(node);
-        node.querySelectorAll && node.querySelectorAll(".user-card").forEach(bind);
-    }))).observe(list, { childList: true, subtree: true });
-})();
+    if(error) {
+        alert("发送失败: " + error.message);
+        updateResetBtnState();
+        return;
+    }
 
+    alert("验证码已发送至邮箱，请查收（有效期约 1 分钟）");
+    resetCountdown = 60;
+    updateResetBtnState();
 
+    resetTimer = setInterval(() => {
+        resetCountdown--;
+        updateResetBtnState();
+        if(resetCountdown <= 0) {
+            clearInterval(resetTimer);
+            resetTimer = null;
+        }
+    }, 1000);
+};
+
+window.submitResetPassword = async function() {
+    const email = document.getElementById("resetEmail").value.trim();
+    const code = document.getElementById("resetCode").value.trim();
+    const newPwd = document.getElementById("resetNewPwd").value;
+    const confirmPwd = document.getElementById("resetConfirmPwd").value;
+
+    if(!email || !code || !newPwd || !confirmPwd) {
+        alert("请填写所有字段");
+        return;
+    }
+    if(newPwd !== confirmPwd) {
+        alert("两次输入的密码不一致");
+        return;
+    }
+    if(newPwd.length < 6) {
+        alert("密码至少6位");
+        return;
+    }
+
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: email,
+        token: code,
+        type: 'email'
+    });
+
+    if(verifyError) {
+        alert("验证码错误或已过期，请重新获取");
+        return;
+    }
+
+    const { error: updateError } = await supabase.auth.updateUser({
+        password: newPwd
+    });
+
+    if(updateError) {
+        alert("密码修改失败: " + updateError.message);
+        return;
+    }
+
+    await supabase.auth.signOut();
+
+    alert("✅ 密码重置成功！请使用新密码登录");
+    showLoginForm();
+};
+
+/* =====================
+   全局导航栏通用函数
+   ===================== */
+
+window.updateNavUser = async function() {
+    const navAvatar = document.getElementById('navAvatar');
+    const navFallback = document.getElementById('navAvatarFallback');
+    const navText = document.getElementById('navUserText');
+    const dropdown = document.getElementById('userDropdown');
+    if(!navAvatar || !dropdown) return;
+
+    const { data: authData } = await supabase.auth.getUser();
+
+    if(authData.user) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('name, avatar')
+            .eq('id', authData.user.id)
+            .maybeSingle();
+
+        const name = profile?.name || authData.user.email?.split('@')[0] || '用户';
+        if(navText) navText.textContent = name;
+
+        if(profile?.avatar) {
+            navAvatar.src = profile.avatar;
+            navAvatar.style.display = 'block';
+            if(navFallback) navFallback.style.display = 'none';
+        } else {
+            if(navFallback) {
+                navFallback.textContent = name.charAt(0).toUpperCase();
+                navFallback.style.display = 'flex';
+            }
+            navAvatar.style.display = 'none';
+        }
+        dropdown.innerHTML = `
+            <a href="card.html">我的名片</a>
+            <a href="profile.html">编辑资料</a>
+            <div class="dropdown-divider"></div>
+            <a href="#" onclick="doNavLogout(); return false;">退出登录</a>
+        `;
+    } else {
+        if(navText) navText.textContent = '登录';
+        if(navFallback) {
+            navFallback.textContent = '👤';
+            navFallback.style.display = 'flex';
+        }
+        navAvatar.style.display = 'none';
+        dropdown.innerHTML = `
+            <a href="login.html">登录账号</a>
+            <a href="register.html">注册账号</a>
+        `;
+    }
+};
+
+window.toggleUserMenu = function(e) {
+    if(e) e.stopPropagation();
+    const d = document.getElementById('userDropdown');
+    if(d) d.classList.toggle('show');
+};
+
+document.addEventListener('click', function() {
+    const d = document.getElementById('userDropdown');
+    if(d) d.classList.remove('show');
+});
+
+window.goToMyCard = async function() {
+    const { data } = await supabase.auth.getUser();
+    if(data.user) {
+        location.href = 'card.html';
+    } else {
+        sessionStorage.setItem('returnUrl', 'card.html');
+        location.href = 'login.html';
+    }
+};
+
+window.doNavLogout = async function() {
+    await supabase.auth.signOut();
+    location.href = 'home.html';
+};
