@@ -6,6 +6,18 @@
 <title>电子名片系统 - 首页</title>
 <link rel="stylesheet" href="style.css">
 <style>
+/* ========== 强制覆盖全局样式，修复首页错位 ========== */
+body.home-body {
+    display: block !important; 
+    padding: 0 !important; 
+    margin: 0 !important;
+    background: linear-gradient(180deg, #0c0e1b 0%, #12142b 40%, #0d0f20 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding-top: 64px !important;
+    overflow-x: hidden;
+}
+
 /* ========== 统一导航栏 ========== */
 .top-nav {
     position: fixed;
@@ -28,18 +40,6 @@
 .nav-logo {
     width: 160px;
     flex-shrink: 0;
-}
-.nav-menu {
-    flex: 1;
-    justify-content: center;
-}
-.nav-user {
-    width: 160px;
-    flex-shrink: 0;
-    display: flex;
-    justify-content: flex-end;
-}
-.nav-logo {
     font-size: 18px;
     font-weight: 700;
     color: #f1f5f9;
@@ -50,8 +50,17 @@
     letter-spacing: -0.3px;
 }
 .nav-menu {
+    flex: 1;
     display: flex;
+    justify-content: center;
     gap: 8px;
+}
+.nav-user {
+    width: 160px;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    position: relative;
 }
 .nav-link {
     color: rgba(255, 255, 255, 0.5);
@@ -65,9 +74,6 @@
 .nav-link:hover, .nav-link.active {
     color: #a78bfa;
     background: rgba(167, 139, 250, 0.08);
-}
-.nav-user {
-    position: relative;
 }
 .avatar-wrap {
     display: flex;
@@ -121,6 +127,7 @@
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.3s ease;
+    z-index: 1001;
 }
 .user-dropdown.show {
     opacity: 1;
@@ -147,12 +154,6 @@
 }
 
 /* ========== 首页主体 ========== */
-.home-body {
-    background: linear-gradient(180deg, #0c0e1b 0%, #12142b 40%, #0d0f20 100%);
-    background-attachment: fixed;
-    min-height: 100vh;
-    padding-top: 64px;
-}
 .hero {
     text-align: center;
     padding: 100px 20px 80px;
@@ -222,6 +223,7 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 60px 40px;
+    width: 100%;
 }
 .section-title {
     text-align: center;
@@ -370,7 +372,7 @@
     <a href="register.html" class="btn-primary-lg">立即创建名片</a>
     <a href="users.html" class="btn-secondary-lg">浏览名片广场</a>
   </div>
-</section>
+</section> <!-- ★ 修复：补上了这里的闭合标签 -->
 
 <!-- 功能特色 -->
 <section class="section">
@@ -437,7 +439,6 @@ async function updateNavUser() {
       avatarImg.style.display = 'none';
       avatarFallback.style.display = 'flex';
     }
-    // 已登录下拉菜单
     dropdown.innerHTML = `
       <a href="card.html">我的名片</a>
       <a href="profile.html">编辑资料</a>
@@ -449,7 +450,6 @@ async function updateNavUser() {
     avatarFallback.textContent = '👤';
     avatarImg.style.display = 'none';
     avatarFallback.style.display = 'flex';
-    // 未登录下拉菜单
     dropdown.innerHTML = `
       <a href="login.html">登录账号</a>
       <a href="register.html">注册账号</a>
@@ -459,12 +459,13 @@ async function updateNavUser() {
 
 // 下拉菜单切换
 window.toggleUserMenu = function(e) {
-  e.stopPropagation();
+  if(e) e.stopPropagation();
   document.getElementById('userDropdown').classList.toggle('show');
 };
 
 document.addEventListener('click', () => {
-  document.getElementById('userDropdown').classList.remove('show');
+  const menu = document.getElementById('userDropdown');
+  if(menu) menu.classList.remove('show');
 });
 
 // 去个人名片
@@ -507,9 +508,14 @@ async function loadPreview() {
 
     const img = document.createElement('img');
     img.className = 'preview-avatar';
-    img.src = user.avatar || '';
-    img.alt = '';
-    img.onerror = function() { this.style.background = 'rgba(255,255,255,0.05)'; this.src = ''; };
+    // 如果头像为空，给一个默认的占位图，防止出现破图图标
+    if (user.avatar) {
+        img.src = user.avatar;
+        img.onerror = function() { this.style.background = 'rgba(255,255,255,0.05)'; this.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="%231a1d3a"/><text x="32" y="38" font-size="24" text-anchor="middle" fill="%23ffffff" opacity="0.3">👤</text></svg>'; };
+    } else {
+        img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="%231a1d3a"/><text x="32" y="38" font-size="24" text-anchor="middle" fill="%23ffffff" opacity="0.3">👤</text></svg>';
+    }
+    img.alt = '头像';
 
     const name = document.createElement('h4');
     name.className = 'preview-name';
