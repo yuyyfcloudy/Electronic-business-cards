@@ -113,7 +113,7 @@ window.saveProfile = async function(){
         github: document.getElementById("github").value,
         honor_text: document.getElementById("honor_text").value,
         hidden_fields: hiddenFields,
-        is_hidden: isHidden
+        is_hidden: Boolean(isHidden) // 修复：强制转为布尔值
     };
 
     if(avatarUrl){
@@ -180,7 +180,6 @@ let resetTimer = null;
 window.showForgotForm = function() {
     document.getElementById("loginForm").style.display = "none";
     document.getElementById("forgotForm").style.display = "block";
-    // Clear fields
     document.getElementById("resetEmail").value = "";
     document.getElementById("resetCode").value = "";
     document.getElementById("resetNewPwd").value = "";

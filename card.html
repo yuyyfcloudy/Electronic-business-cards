@@ -32,7 +32,6 @@
   </div>
 </nav>
 
-<!-- 占位 -->
 <div class="nav-spacer"></div>
 
 <div class="profile-wrap">
@@ -171,11 +170,15 @@ function truncate(str, len){
     return str.length > len ? str.slice(0, len) + "..." : str;
 }
 
+// 修复：统一处理隐藏字段解析
 function normalizeHiddenFields(raw) {
     if (!raw) return [];
     if (Array.isArray(raw)) return raw;
     if (typeof raw === 'string') {
-        try { return JSON.parse(raw); } catch(e) { return []; }
+        try { 
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch(e) { return []; }
     }
     return [];
 }
@@ -246,10 +249,13 @@ function renderHonorImages(honorData) {
 
         isOwner = currentUserId === targetId;
 
+        // 修复：使用 normalizeHiddenFields
         const hiddenFields = normalizeHiddenFields(data.hidden_fields);
         const shouldHideField = (field) => hiddenFields.includes(field) && !isOwner;
 
-        if((data.is_hidden === true || data.is_hidden === "true") && !isOwner){
+        // 修复：严格判断 is_hidden 的真假
+        const isCardHidden = data.is_hidden === true || data.is_hidden === "true";
+        if(isCardHidden && !isOwner){
             alert("该名片已隐藏");
             location.href = "users.html";
             return;
@@ -266,7 +272,9 @@ function renderHonorImages(honorData) {
         document.getElementById("userId").textContent = data.id || "—";
 
         const introEl = document.getElementById("intro");
-        if(data.intro && data.intro.trim() && !shouldHideField('intro')){
+        // 修复：防止 data.intro 为空导致 .trim() 报错
+        const hasIntro = data.intro && String(data.intro).trim().length > 0;
+        if(hasIntro && !shouldHideField('intro')){
             introEl.textContent = data.intro;
             introEl.classList.remove("empty");
         } else {
@@ -313,11 +321,15 @@ function renderHonorImages(honorData) {
 
         const honorBlock = document.getElementById("honorBlock");
         const honorTextEl = document.getElementById("honorText");
-        const hasVisibleHonor = (data.honor_text && !shouldHideField('honor_text')) || (data.honor_image && !shouldHideField('honor_image'));
+        
+        // 修复：防止 data.honor_text 为 null 时的 `.trim()` 报错
+        const hasHonorText = data.honor_text && String(data.honor_text).trim().length > 0;
+        const hasHonorImage = data.honor_image && String(data.honor_image).trim().length > 0;
+        const hasVisibleHonor = (hasHonorText && !shouldHideField('honor_text')) || (hasHonorImage && !shouldHideField('honor_image'));
         
         if(hasVisibleHonor){
             honorBlock.style.display = "block";
-            if(data.honor_text && data.honor_text.trim() && !shouldHideField('honor_text')){
+            if(hasHonorText && !shouldHideField('honor_text')){
                 honorTextEl.textContent = data.honor_text;
                 honorTextEl.style.display = "block";
             } else {
@@ -338,7 +350,7 @@ function renderHonorImages(honorData) {
             document.getElementById("actionBlock").style.display = "block";
             const logoutBtn = document.getElementById("logoutBtn"); if(logoutBtn) logoutBtn.style.display = "inline-flex";
             document.getElementById("welcomeBar").style.display = "flex";
-            if(data.is_hidden){
+            if(isCardHidden){
                 document.getElementById("welcomeText").textContent = "🙈 你的名片当前在名片广场中已隐藏";
                 document.getElementById("welcomeText").style.color = "#ff6b6b";
             } else {

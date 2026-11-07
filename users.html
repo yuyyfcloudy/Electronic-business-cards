@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>名片广场</title>
 <link rel="stylesheet" href="style.css">
-
 </head>
 <body class="users-body">
 
@@ -57,6 +56,19 @@ const list = document.getElementById("userList");
 let currentUserId = null;
 let allData = [];
 
+// 统一处理隐藏字段解析
+function normalizeHiddenFields(raw) {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string') {
+        try { 
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch(e) { return []; }
+    }
+    return [];
+}
+
 document.getElementById("searchInput").addEventListener("input", (e) => {
     const keyword = e.target.value.toLowerCase().trim();
     if (!keyword) {
@@ -70,12 +82,11 @@ document.getElementById("searchInput").addEventListener("input", (e) => {
     render(filtered);
 });
 
-
 // 维护已渲染卡片的映射：id -> { el, refs }
 const cardMap = new Map();
 let isFirstLoad = true;
 
-// 获取有效头像 URL，空 / null / 纯空格 时不设置 src（显示空白占位）
+// 获取有效头像 URL
 function getAvatarUrl(raw) {
     if (raw && typeof raw === "string" && raw.trim().length > 0) {
         return raw.trim();
@@ -83,19 +94,19 @@ function getAvatarUrl(raw) {
     return "";
 }
 
-// 截断文本
 function truncate(str, len) {
     if (!str) return "";
     str = String(str);
     return str.length > len ? str.slice(0, len) + "..." : str;
 }
 
-// 创建一张新卡片 DOM，返回 { el, refs }
 function createCard(user, isNewEntry = false) {
     const card = document.createElement("div");
-    const hiddenFields = user.hidden_fields || [];
+    // 修复：使用 normalizeHiddenFields 解析
+    const hiddenFields = normalizeHiddenFields(user.hidden_fields);
     const isOwner = user.id === currentUserId;
     const shouldHideField = (field) => hiddenFields.includes(field) && !isOwner;
+    
     card.className = "user-card";
     if (isNewEntry) {
         card.classList.add("card-enter");
@@ -220,7 +231,7 @@ function createCard(user, isNewEntry = false) {
 
     const bioText = document.createElement("p");
     bioText.className = "card-bio-text";
-    if(hiddenFields.includes('intro')) {
+    if(shouldHideField('intro')) {
         bioText.classList.add("empty");
         bioText.textContent = "该用户已隐藏个人介绍";
     } else {
@@ -257,7 +268,6 @@ function createCard(user, isNewEntry = false) {
     card.appendChild(bio);
     card.appendChild(footer);
 
-    // 缓存引用，方便 diff 更新
     const refs = {
         avatar,
         nameEl,
@@ -270,7 +280,6 @@ function createCard(user, isNewEntry = false) {
     return { el: card, refs };
 }
 
-// 更新已有卡片，只改动真正变化的数据
 function updateCard(entry, user) {
     const { refs } = entry;
     const hiddenFields = normalizeHiddenFields(user.hidden_fields);
@@ -364,7 +373,6 @@ function updateCard(entry, user) {
     entry.el.onclick = () => { location.href = "card.html?id=" + encodeURIComponent(user.id); };
 }
 
-// 核心渲染：diff 更新，绝不整体 innerHTML 覆盖
 function render(data) {
     if (!data) data = [];
 
@@ -385,7 +393,6 @@ function render(data) {
 
         if (entry) {
             updateCard(entry, user);
-            // 调整位置（如果顺序变了）
             if (refNode !== entry.el) {
                 list.insertBefore(entry.el, refNode);
             }
@@ -400,7 +407,6 @@ function render(data) {
         }
     });
 
-    // 3. 首次加载且空数据时显示提示
     if (isFirstLoad && data.length === 0) {
         list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📇</div><div class="empty-state-text">还没有人创建名片，快去创建第一张吧！</div></div>';
     }
@@ -408,11 +414,11 @@ function render(data) {
     isFirstLoad = false;
 }
 
-// 拉取数据 — 查询全部字段
 async function fetchData() {
-	  const { data: authData } = await supabase.auth.getUser();
-  	  currentUserId = authData.user ? authData.user.id : null;
- 	  const { data, error } = await supabase
+    const { data: authData } = await supabase.auth.getUser();
+    currentUserId = authData.user ? authData.user.id : null;
+    
+    const { data, error } = await supabase
         .from("profiles")
         .select("id, name, job, avatar, phone, email, github, intro, hidden_fields, is_hidden");
 
@@ -424,9 +430,12 @@ async function fetchData() {
         return;
     }
 
-	allData = (data || []).filter(u => !(u.is_hidden === true || u.is_hidden === "true"));
+    // 修复：严格判断 is_hidden 的真假
+    allData = (data || []).filter(u => {
+        const isHidden = u.is_hidden === true || u.is_hidden === "true";
+        return !isHidden;
+    });
     
-    // 如果搜索框有内容，保持当前搜索结果
     const keyword = document.getElementById("searchInput").value.toLowerCase().trim();
     if (keyword) {
         const filtered = allData.filter(u => 
@@ -439,12 +448,8 @@ async function fetchData() {
     }
 }
 
-// 首次加载
 fetchData();
-
-// 定时轮询，每 8 秒静默刷新一次
 setInterval(fetchData, 8000);
-
 updateNavUser();
 </script>
 </body>
