@@ -104,7 +104,6 @@ function normalizeHiddenFields(raw) {
             if(cb) cb.checked = true;
         });
         
-        // 关键修复：字符串 "false" 在 if 里是 true，必须严格判断
         if(data.is_hidden === true || data.is_hidden === "true"){
             document.getElementById("hideAllCard").checked = true;
         }
@@ -123,6 +122,25 @@ function normalizeHiddenFields(raw) {
         }
     }
 })();
+
+// =====================
+// 直接在这个页面绑定快捷操作，绕过 script.js 加载问题
+// =====================
+window.hideAllFields = function() {
+    document.querySelectorAll('.hide-check').forEach(cb => {
+        cb.checked = true;
+    });
+};
+
+window.showAllFields = function() {
+    document.querySelectorAll('.hide-check').forEach(cb => {
+        cb.checked = false;
+    });
+    const hideAllCard = document.getElementById("hideAllCard");
+    if (hideAllCard) {
+        hideAllCard.checked = false;
+    }
+};
 </script>
 
 </body>
