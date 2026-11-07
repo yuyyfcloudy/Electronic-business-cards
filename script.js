@@ -371,3 +371,26 @@ window.doNavLogout = async function() {
     await supabase.auth.signOut();
     location.href = 'home.html';
 };
+
+// =====================
+// 隐私设置：全选/全显 快捷操作
+// =====================
+
+window.hideAllFields = function() {
+    // 勾选所有字段的隐藏复选框
+    document.querySelectorAll('.hide-check').forEach(cb => {
+        cb.checked = true;
+    });
+};
+
+window.showAllFields = function() {
+    // 取消所有字段的隐藏复选框
+    document.querySelectorAll('.hide-check').forEach(cb => {
+        cb.checked = false;
+    });
+    // 同时取消“全部隐藏整张名片”的勾选
+    const hideAllCard = document.getElementById("hideAllCard");
+    if (hideAllCard) {
+        hideAllCard.checked = false;
+    }
+};
